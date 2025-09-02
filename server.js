@@ -23,8 +23,8 @@ app.use(cors({
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // --- Simple knowledge base (MVP) ---
-import products from './data/products.json' assert { type: 'json' };
-import faq from './data/faq.json' assert { type: 'json' };
+ import products from './data/products.json' with { type: 'json' };
+import faq from './data/faq.json' with { type: 'json' };
 
 // Helper to build a compact context string
 function buildContext() {
