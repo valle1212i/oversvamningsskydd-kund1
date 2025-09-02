@@ -4,8 +4,21 @@ import express from 'express';
 import cors from 'cors';
 import { OpenAI } from 'openai';
 
-import products from './data/products.json' assert { type: 'json' };
-import faq from './data/faq.json' assert { type: 'json' };
+// Ladda JSON utan import-attributes (mest kompatibelt)
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const products = JSON.parse(
+  readFileSync(join(__dirname, 'data', 'products.json'), 'utf8')
+);
+const faq = JSON.parse(
+  readFileSync(join(__dirname, 'data', 'faq.json'), 'utf8')
+);
+
 
 const app = express();
 app.use(express.json());
