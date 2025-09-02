@@ -1,5 +1,6 @@
 (() => {
-    const API_URL = 'https://<DIN-AURORA-BACKEND>.onrender.com/api/aurora/ask';
+    const API_URL = 'https://aurora-backend-kund-oversvamningsskydd.onrender.com/api/aurora/ask';
+
   
     let history = [];
   
