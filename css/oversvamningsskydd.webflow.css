@@ -6913,5 +6913,9 @@
     grid-area: span 1 / span 1 / span 1 / span 1;
   }
 }
+/* Fix för rubriken "Trusted by Swedish businesses" */
+.heading_h2 {
+  color: #162850 !important; /* mörkblå */
+}
 
 
