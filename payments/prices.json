@@ -1,0 +1,19 @@
+{
+    "price_1S3yTsAg8z29IvXWmtAAlilX_vattenpump": { "name": "Vattenpump", "amount": 230000, "currency": "sek" },
+    "price_1S3yVZAg8z29IvXWKAM6rk4F_bung_toalett": { "name": "Bung till toalett", "amount": 150000, "currency": "sek" },
+    "price_1S3yX5Ag8z29IvXWf2bb9wWi_vent_lucka": { "name": "Ventilation lucka", "amount": 350000, "currency": "sek" },
+    "price_1S3yYEAg8z29IvXWNk5aq56B_backventil_160_110": { "name": "Backventil 160/110", "amount": 250000, "currency": "sek" },
+    "price__1S3yZJAg8z29IvXWBTLWvUK4_backvattenventil": { "name": "Back vatten ventil", "amount": 159800, "currency": "sek" },
+    "price_1S3yavAg8z29IvXWqiJkG6e9_fransk_dorr": { "name": "Fransk dörr", "amount": 9800000, "currency": "sek" },
+    "price_1S3ycMAg8z29IvXWhe6Poosy_darrington_dorr": { "name": "Darrington dörr", "amount": 9800000, "currency": "sek" },
+    "price_1S3yeEAg8z29IvXWNTsXONLg_teeside_dorr": { "name": "Teeside dörr", "amount": 9800000, "currency": "sek" },
+    "price_1S3yfvAg8z29IvXWLl0Qxn30_upvc_dorr": { "name": "UPVC dörr", "amount": 8500000, "currency": "sek" },
+    "price_1S3yhVAg8z29IvXWFSggZGeS_sandman_dorr": { "name": "Sandman dörr", "amount": 8500000, "currency": "sek" },
+    "price_1S3yiaAg8z29IvXWKyUI1Py8_weatherly_dorr": { "name": "Weatherly dörr", "amount": 8500000, "currency": "sek" },
+    "price_1S3yjsAg8z29IvXWDCWdlmQE_nikita_dorr": { "name": "Nikita dörr", "amount": 8500000, "currency": "sek" },
+    "price_1S3yleAg8z29IvXWGRuyVSo0_sappho_dorr": { "name": "Sappho dörr", "amount": 8500000, "currency": "sek" },
+    "price_1S3ymwAg8z29IvXW2jFuk6oD_woodstock_dorr": { "name": "Woodstock dörr", "amount": 8500000, "currency": "sek" },
+    "price_1S3zLcAg8z29IvXWaW6XNUDh_dameasy_barriar": { "name": "Dameasy flood barriär", "amount": 2000000, "currency": "sek" },
+    "price_1S3zNEAg8z29IvXWxaLCd7m4_tra_dorr": { "name": "Trä översvämningsdörr", "amount": 13000000, "currency": "sek" }
+  }
+  
