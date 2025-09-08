@@ -14,6 +14,7 @@
     "price_1S3yleAg8z29IvXWGRuyVSo0_sappho_dorr": { "name": "Sappho dörr", "amount": 8500000, "currency": "sek" },
     "price_1S3ymwAg8z29IvXW2jFuk6oD_woodstock_dorr": { "name": "Woodstock dörr", "amount": 8500000, "currency": "sek" },
     "price_1S3zLcAg8z29IvXWaW6XNUDh_dameasy_barriar": { "name": "Dameasy flood barriär", "amount": 2000000, "currency": "sek" },
-    "price_1S3zNEAg8z29IvXWxaLCd7m4_tra_dorr": { "name": "Trä översvämningsdörr", "amount": 13000000, "currency": "sek" }
+    "price_1S3zNEAg8z29IvXWxaLCd7m4_tra_dorr": { "name": "Trä översvämningsdörr", "amount": 13000000, "currency": "sek" },
+    "price_154zVAgB29z19XV0JpfYl5I1_testprodukt": { "name": "Test produkt", "amount": 1, "currency": "sek" }
   }
   
