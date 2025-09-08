@@ -1,0 +1,10 @@
+[
+  {
+    "q": "Hur testar jag en betalning?",
+    "a": "Gå till sidan products-2.html och klicka på knappen för testbetalning (1 kr)."
+  },
+  {
+    "q": "Vad händer när köpet är klart?",
+    "a": "Du skickas till en tacksida och vi loggar händelsen i vårt system."
+  }
+]

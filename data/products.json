@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Vattenpump",
+    "type": "Pump",
+    "use": "För att pumpa bort överskottsvatten vid översvämningar",
+    "specs": "Elektrisk pump",
+    "suits": "Hus, källare, fastigheter",
+    "sku": "price_1S3yTsAg8z29IvXWmtAAlilX_vattenpump"
+  },
+  {
+    "name": "Bung till toalett",
+    "type": "Tillbehör",
+    "use": "För att täta toalett och förhindra bakflöde",
+    "specs": "Manuell uppblåsbar bung",
+    "suits": "Sanitetsinstallationer",
+    "sku": "price_1S3yVZAg8z29IvXWKAM6rk4F_bung_toalett"
+  },
+  {
+    "name": "Backventil 160/110",
+    "type": "Ventil",
+    "use": "Förhindrar bakflöde i avloppssystem",
+    "specs": "Plast, dimension 160/110 mm",
+    "suits": "Avloppssystem i fastigheter",
+    "sku": "price_1S3yYEAg8z29IvXWNk5aq56B_backventil_160_110"
+  },
+  {
+    "name": "Backvattenventil",
+    "type": "Ventil",
+    "use": "Förhindrar bakflöde i avlopp",
+    "specs": "Vit plast, manuell stängning",
+    "suits": "Avloppssystem i fastigheter",
+    "sku": "price__1S3yZJAg8z29IvXWBTLWvUK4_backvattenventil"
+  },
+  {
+    "name": "Test produkt",
+    "type": "Test",
+    "use": "Endast för testbetalning 1 kr",
+    "specs": "—",
+    "suits": "—",
+    "sku": "price_154zVAgB29z19XV0JpfYl5I1_testprodukt"
+  }
+]
