@@ -1,3 +1,4 @@
+// payments/server.js
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -8,9 +9,9 @@ const app = express();
 
 // --- CORS: tillåt din statiska site + lokal dev + ev. extra från env ---
 const ALLOWED = new Set([
-  'https://oversvamningsskydd-kund1.onrender.com', // DIN STATIC SITE (prod/test)
-  'http://localhost:5500',                          // Lokal (VS Code Live Server)
-  process.env.FRONTEND_ORIGIN                       // Ev. extra origin via env
+  'https://oversvamningsskydd-kund1.onrender.com', // statiska siten
+  'http://localhost:5500',                         // lokal (Live Server)
+  process.env.FRONTEND_ORIGIN                      // ev. extra origin via env
 ].filter(Boolean));
 
 app.use(cors({
@@ -41,50 +42,62 @@ try {
 
 // --- Hjälpare ---
 function isAllowedPrice(priceId) {
-  if (priceWhitelist.length === 0) return true; // t.ex. i tidig test
+  if (priceWhitelist.length === 0) return true; // tillåt allt i tidig test
   return priceWhitelist.includes(priceId);
 }
 
-// --- Skapa Checkout Session ---
-app.post('/api/checkout/create-session', express.json(), async (req, res) => {
-  try {
-    const { items = [], customer_email } = req.body || {};
-    // items: [{ price: 'price_...', quantity: N }]
-
-    if (!Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ success: false, message: 'items required' });
-    }
-
-    for (const it of items) {
-      if (!it.price || !isAllowedPrice(it.price)) {
-        return res.status(400).json({ success: false, message: 'invalid price id' });
+// ========== Checkout: gemensam handler + alias ==========
+const createCheckoutHandler = [
+  express.json(),
+  async (req, res) => {
+    try {
+      const body = req.body || {};
+      // Stöd båda formaten
+      let items = [];
+      if (Array.isArray(body.items) && body.items.length > 0) {
+        items = body.items;
+      } else if (body.priceId) {
+        items = [{ price: body.priceId, quantity: Number.isInteger(body.quantity) ? body.quantity : 1 }];
       }
-      if (!Number.isInteger(it.quantity) || it.quantity < 1) {
-        return res.status(400).json({ success: false, message: 'invalid quantity' });
+
+      if (!Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({ success: false, message: 'items required' });
       }
+
+      for (const it of items) {
+        if (!it.price || !isAllowedPrice(it.price)) {
+          return res.status(400).json({ success: false, message: 'invalid price id' });
+        }
+        if (!Number.isInteger(it.quantity) || it.quantity < 1) {
+          return res.status(400).json({ success: false, message: 'invalid quantity' });
+        }
+      }
+
+      const session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        line_items: items.map(i => ({ price: i.price, quantity: i.quantity })),
+        success_url: process.env.SUCCESS_URL,
+        cancel_url: process.env.CANCEL_URL,
+        customer_email: body.customer_email || undefined,
+        metadata: { source: 'vattentrygg' }
+      }, {
+        // idempotency för att undvika dubletter vid dubbelklick
+        idempotencyKey: `cs_${Date.now()}_${Math.random().toString(36).slice(2)}`
+      });
+
+      return res.json({ success: true, url: session.url });
+    } catch (err) {
+      console.error('create-session error:', err);
+      return res.status(500).json({ success: false, message: 'server error' });
     }
-
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      line_items: items.map(i => ({ price: i.price, quantity: i.quantity })),
-      success_url: process.env.SUCCESS_URL,
-      cancel_url: process.env.CANCEL_URL,
-      customer_email: customer_email || undefined,
-      metadata: { source: 'vattentrygg' }
-    }, {
-      // idempotency för att undvika dubletter vid dubbelklick
-      idempotencyKey: `cs_${Date.now()}_${Math.random().toString(36).slice(2)}`
-    });
-
-    res.json({ success: true, url: session.url });
-  } catch (err) {
-    console.error('create-session error:', err);
-    res.status(500).json({ success: false, message: 'server error' });
   }
-});
+];
 
-// --- Webhook med rå body ---
-app.post('/api/stripe/webhook', async (req, res) => {
+app.post('/api/checkout/create-session', ...createCheckoutHandler);
+app.post('/checkout/create-session', ...createCheckoutHandler);
+
+// ========== Webhook: rå body + alias ==========
+async function stripeWebhookHandler(req, res) {
   const sig = req.headers['stripe-signature'];
   const whSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!whSecret) return res.status(500).send('Webhook secret not set');
@@ -114,17 +127,19 @@ app.post('/api/stripe/webhook', async (req, res) => {
       default:
         console.log('Unhandled event:', event.type);
     }
-    res.json({ received: true });
+    return res.json({ received: true });
   } catch (err) {
     console.error('Webhook handler error:', err);
-    res.status(500).send('Webhook handler error');
+    return res.status(500).send('Webhook handler error');
   }
-});
+}
 
-// Healthcheck
+app.post('/api/stripe/webhook', stripeWebhookHandler);
+app.post('/stripe/webhook', stripeWebhookHandler);
+
+// ========== Healthcheck (alias) ==========
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
+app.get('/health', (_req, res) => res.json({ ok: true }));
 
 const PORT = process.env.PORT || 8081;
 app.listen(PORT, () => console.log('Payments API listening on', PORT));
-
-// FORCE 1757338087
