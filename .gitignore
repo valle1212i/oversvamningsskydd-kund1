@@ -6,7 +6,6 @@ payments/.env
 node_modules/
 
 # Bygg-output (olika ramverk/generatorer)
-dist/
 build/
 .next/
 out/
