@@ -1374,19 +1374,22 @@
   </div>
 </div>
 
+<script src="https://js.stripe.com/v3/"></script>
 <script>
 (function () {
   const btn = document.getElementById('pay-1sek');
   const statusEl = document.getElementById('pay-status');
 
-  // 1) DITT PRIS (1 kr test)
-  const PRICE_ID = 'price_154zVAgB29z19XV0JpfYl5I1_testprodukt';
+  // 1) DITT PRIS (1 kr live)
+  const PRICE_ID = 'price_1S4zViAg8z29IvXWIpYFl1SI';
 
   // 2) DIN BACKEND (Render)
   const API_BASE = 'https://aurora-backend-kund-oversvamningsskydd.onrender.com';
 
-  // (valfritt) Fyll i din Publishable Key om backend returnerar { id: 'cs_...' }
-  const STRIPE_PK = ''; // t.ex. 'pk_live_xxx' eller 'pk_test_xxx'
+  // 3) Din Publishable Key (live)
+  const STRIPE_PK = 'pk_live_51S31arAg8z29IvXWEZEqKPbPSQsARWlAkXnaJ56XY9DCyBIy2lfZ6F4tAU8SqVFPhreu7zaWrYnV0BaEOWo4p4Ck008aRLxTpf';
+
+  const stripe = Stripe(STRIPE_PK);
 
   btn.addEventListener('click', createCheckout);
 
@@ -1403,35 +1406,21 @@
         })
       });
 
-      // Läs kroppen säkert oavsett om den är JSON eller ej
-      const raw = await resp.text();
-      let data = null;
-      try { data = raw ? JSON.parse(raw) : null; } catch { /* ej JSON */ }
-
+      const data = await resp.json();
       if (!resp.ok) {
-        const msg = data && data.message ? data.message : `HTTP ${resp.status}`;
-        throw new Error(`Serverfel: ${msg}`);
+        throw new Error(data.message || `HTTP ${resp.status}`);
       }
 
-      // 1) Vanligast: backend skickar url att gå till
-      if (data && data.url) {
+      if (data.url) {
+        // Backend returnerar färdig Checkout-URL
         window.location.href = data.url;
-        return;
-      }
-
-      // 2) Alternativt: backend skickar sessionId
-      if (data && data.id) {
-        if (!STRIPE_PK) {
-          throw new Error('Saknar Stripe Publishable Key (STRIPE_PK). Fyll i den i koden.');
-        }
-        await ensureStripeJs();
-        const stripe = Stripe(STRIPE_PK);
+      } else if (data.id) {
+        // Backend returnerar sessionId
         const { error } = await stripe.redirectToCheckout({ sessionId: data.id });
         if (error) throw error;
-        return;
+      } else {
+        throw new Error('Oväntat svar från backend');
       }
-
-      throw new Error('Ov\u00e4ntat svar fr\u00e5n API (varken url eller id).');
 
     } catch (err) {
       console.error('[Checkout error]', err);
@@ -1442,19 +1431,9 @@
       setTimeout(() => (statusEl.textContent = ''), 2500);
     }
   }
-
-  async function ensureStripeJs() {
-    if (window.Stripe) return;
-    await new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = 'https://js.stripe.com/v3/';
-      s.onload = resolve;
-      s.onerror = reject;
-      document.head.appendChild(s);
-    });
-  }
 })();
 </script>
+
 
 </body>
 </html>
