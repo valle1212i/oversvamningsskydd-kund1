@@ -1395,7 +1395,7 @@
     statusEl.textContent = 'Skapar betalning…';
 
     try {
-      const resp = await fetch(`${API_BASE}/checkout/create-session`, {
+      const resp = await fetch(`${API_BASE}/api/checkout/create-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
