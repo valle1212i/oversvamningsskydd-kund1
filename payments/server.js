@@ -17,7 +17,7 @@ const ALLOWED = [
 app.use(
   cors({
     origin: (origin, cb) => {
-      // tillåt även curl/servrar utan origin
+      // tillåt även curl/servrar utan Origin
       if (!origin || ALLOWED.includes(origin)) return cb(null, true);
       return cb(new Error(`CORS blocked: ${origin}`));
     },
@@ -25,18 +25,20 @@ app.use(
   })
 );
 
-// preflight (för säkerhets skull)
+// Preflight
 app.options("*", (_req, res) => res.sendStatus(204));
 
 /* --------------- Stripe klient --------------- */
 if (!process.env.STRIPE_SECRET_KEY) {
   console.error("❌ Missing STRIPE_SECRET_KEY");
 }
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2024-06-20",
 });
 
 /* ----------- Hjälpare & config ---------- */
+const SUCCESS_URL = process.env.SUCCESS_URL || "";
+const CANCEL_URL = process.env.CANCEL_URL || "";
 
 // (valfritt) tillåt bara vissa price-id via env ALLOWED_PRICE_IDS="price_x,price_y"
 const priceWhitelist = (process.env.ALLOWED_PRICE_IDS || "")
@@ -44,53 +46,58 @@ const priceWhitelist = (process.env.ALLOWED_PRICE_IDS || "")
   .map((s) => s.trim())
   .filter(Boolean);
 
-function isStripePriceId(s) {
-  return typeof s === "string" && /^price_[A-Za-z0-9]+$/.test(s);
-}
-function validateWhitelist(priceId) {
-  if (priceWhitelist.length === 0) return true;
-  return priceWhitelist.includes(priceId);
-}
+const isStripePriceId = (s) =>
+  typeof s === "string" && /^price_[A-Za-z0-9]+$/.test(s);
+
+const validateWhitelist = (priceId) =>
+  priceWhitelist.length === 0 || priceWhitelist.includes(priceId);
+
+const isHttpsUrl = (u) => {
+  try {
+    const x = new URL(u);
+    return x.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
 
 /* ----------- Checkout Handler ----------- */
 async function handleCreateSession(req, res) {
   try {
-    if (!process.env.SUCCESS_URL || !process.env.CANCEL_URL) {
-      const msg = "Missing SUCCESS_URL/CANCEL_URL envs";
-      if (process.env.NODE_ENV === "production") {
-        return res.status(500).json({ success: false, message: "server error" });
-      }
-      return res.status(500).json({ success: false, message: msg });
+    // 0) Env-validering
+    const key = process.env.STRIPE_SECRET_KEY || "";
+    if (!key) throw new Error("Missing STRIPE_SECRET_KEY");
+    if (!key.startsWith("sk_live_") && process.env.NODE_ENV === "production") {
+      throw new Error("Using a non-live STRIPE_SECRET_KEY in production");
     }
-    if (!process.env.STRIPE_SECRET_KEY) {
-      const msg = "Missing STRIPE_SECRET_KEY";
-      if (process.env.NODE_ENV === "production") {
-        return res.status(500).json({ success: false, message: "server error" });
-      }
-      return res.status(500).json({ success: false, message: msg });
+    if (!isHttpsUrl(SUCCESS_URL) || !isHttpsUrl(CANCEL_URL)) {
+      throw new Error("SUCCESS_URL and CANCEL_URL must be valid HTTPS URLs");
     }
 
-    // Tillåt två format:
-    // A) { items:[{ price:"price_...", quantity:1 }], customer_email }
-    // B) { priceId:"price_...", quantity:1, customer_email }
-    let { items, priceId, quantity, customer_email, mode = "payment", metadata } =
-      req.body || {};
+    // 1) Body – tillåt två format
+    let {
+      items,
+      priceId,
+      quantity,
+      customer_email,
+      mode = "payment",
+      metadata,
+    } = req.body || {};
 
     if (!Array.isArray(items) || items.length === 0) {
       if (priceId && Number.isInteger(quantity) && quantity > 0) {
         items = [{ price: priceId, quantity }];
       }
     }
-
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ success: false, message: "items[] required" });
     }
 
-    // Normalisera till Stripe line_items – acceptera price eller price_data
+    // 2) Normalisera line_items
     const line_items = items.map((it, idx) => {
-      // 1) price string
+      // a) Referens till befintligt pris
       if (it.price) {
-        const candidate = it.price;
+        const candidate = String(it.price);
         if (!isStripePriceId(candidate)) {
           throw new Error(`Invalid price at index ${idx}: ${it.price}`);
         }
@@ -100,7 +107,7 @@ async function handleCreateSession(req, res) {
         const qty = Number.isInteger(it.quantity) && it.quantity > 0 ? it.quantity : 1;
         return { price: candidate, quantity: qty };
       }
-      // 2) price_data object (on-the-fly)
+      // b) price_data on-the-fly
       if (
         it.price_data &&
         typeof it.price_data.currency === "string" &&
@@ -121,37 +128,41 @@ async function handleCreateSession(req, res) {
       );
     });
 
+    // 3) Skapa session
     const session = await stripe.checkout.sessions.create(
       {
         mode,
         line_items,
-        success_url: process.env.SUCCESS_URL,
-        cancel_url: process.env.CANCEL_URL,
+        // Lägg till session-id i success-url för ev. uppföljning
+        success_url: `${SUCCESS_URL}?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: CANCEL_URL,
         customer_email: customer_email || undefined,
-        metadata: {
-          ...(metadata || {}),
-          source: "oversvamningsskydd",
-        },
+        metadata: { ...(metadata || {}), source: "oversvamningsskydd" },
       },
       {
-        // enkel idempotency, räcker för test
-        idempotencyKey: `cs_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+        // Enkel idempotency – låt client skicka egen om du vill
+        idempotencyKey:
+          req.headers["idempotency-key"] ||
+          `cs_${Date.now()}_${Math.random().toString(36).slice(2)}`,
       }
     );
 
-    return res.json({ success: true, id: session.id, url: session.url });
+    return res.json({ success: true, url: session.url, id: session.id });
   } catch (err) {
-    console.error("create-session error:", err);
-    const payload =
-      process.env.NODE_ENV === "production"
-        ? { success: false, message: "server error" }
-        : {
-            success: false,
-            message: err.message,
-            code: err.code,
-            type: err.type,
-          };
-    return res.status(400).json(payload);
+    // Logga Stripe-detaljer tydligt
+    console.error("create-session error:", {
+      message: err.message,
+      code: err.code,
+      type: err.type,
+      raw: err.raw?.message,
+      param: err.raw?.param,
+      stack: err.stack,
+    });
+
+    // Skicka begripligt fel till frontend (utan känsliga detaljer)
+    const msg = err.raw?.message || err.message || "server error";
+    const status = err.statusCode && Number.isInteger(err.statusCode) ? err.statusCode : 400;
+    return res.status(status).json({ success: false, message: msg });
   }
 }
 
@@ -194,13 +205,13 @@ app.post("/api/stripe/webhook", async (req, res) => {
   }
 });
 
-// JSON body parser för alla övriga endpoints
+// JSON body parser för alla övriga endpoints (efter webhook!)
 app.use(express.json());
 
 // Checkout – primär route
 app.post("/api/checkout/create-session", handleCreateSession);
 
-// Alias som matchar din frontend (OBS: *utan* /checkout i vägen)
+// Alias som matchar din frontend
 app.post("/create-checkout-session", handleCreateSession);
 
 // Health
