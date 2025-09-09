@@ -66,7 +66,7 @@
     document.head.appendChild(style);
   
     // --- Skapa element ---
-    const btn = el('button', { class: 'aurora-btn' }, 'Chatta med Aurora');
+    const btn = el('button', { class: 'aurora-btn' }, 'Chatta med Aurora support för frågor');
     const panel = el('div', { class: 'aurora-panel' }, [
       el('div', { class: 'aurora-head' }, 'Aurora – Översvämningsskydd'),
       el('div', { class: 'aurora-log', id: 'aurora-log' }),
