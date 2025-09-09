@@ -240,22 +240,21 @@
   <div class="div-block"><img src="images/ChatGPT-Image-3-sep.-2025-10_08_23.png" loading="lazy" width="609" sizes="(max-width: 767px) 100vw, 608.9931030273438px" alt="" srcset="images/ChatGPT-Image-3-sep.-2025-10_08_23-p-500.png 500w, images/ChatGPT-Image-3-sep.-2025-10_08_23-p-800.png 800w, images/ChatGPT-Image-3-sep.-2025-10_08_23.png 1024w">
     <h1 class="heading-2"><br><br>     Produktbeskrivning  <br><br>      Valfritt glasMin. bredd: 670mm<br>       Min höjd: 1750mm<br>       Max bredd: 1050mm<br>       Max höjd: 2100mm<br><br>‍<br><br><br><br>‍</h1>
   </div>
-  <div data-hover="false" data-delay="0" class="w-dropdown">
-    <div class="w-dropdown-toggle">
+  <div data-hover="false" data-delay="0" class="w-dropdown" id="sappho-qty">
+    <div class="w-dropdown-toggle" id="sappho-qty-toggle">
       <div class="w-icon-dropdown-toggle"></div>
       <div>Antal</div>
     </div>
-    <nav class="w-dropdown-list">
+    <nav class="w-dropdown-list" id="sappho-qty-list">
       <a href="#" class="w-dropdown-link">1</a>
       <a href="#" class="w-dropdown-link">2</a>
       <a href="#" class="w-dropdown-link">3</a>
     </nav>
-  </div>
+  </div>  
   <div class="button-group is-vertical-stretch">
-    <a href="#" class="button on-inverse w-inline-block">
-      <div>Köp</div>
-    </a>
-  </div>
+    <button id="buy-sappho" class="button on-inverse w-button">Köp nu</button>
+    <small id="sappho-status" style="margin-left:8px"></small>
+  </div>  
   <footer class="footer">
     <div class="container">
       <div class="w-layout-grid grid_2-col margin-bottom_large">
@@ -349,5 +348,99 @@
   <script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=68b5e4fe195b2b7b75214b94" type="text/javascript" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
   <script src="js/webflow.js" type="text/javascript"></script>
   <script src="js/aurora.js"></script>
+  <script>
+    (function(){
+      const API_BASE = 'https://aurora-backend-kund-oversvamningsskydd.onrender.com';
+      // Byt till ditt riktiga Stripe Price-ID för SAPPHO:
+      const PRICE_ID = 'price_1S3zSAPPHO_oversvamningsskydd';
+    
+      // Antal (dropdown)
+      const qtyToggle = document.getElementById('sappho-qty-toggle');
+      const qtyList   = document.getElementById('sappho-qty-list');
+      let qty = 1;
+      if (qtyList && qtyToggle) {
+        qtyList.querySelectorAll('.w-dropdown-link').forEach(link => {
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const n = parseInt(link.textContent.trim(), 10);
+            if (!Number.isNaN(n) && n > 0) {
+              qty = n;
+              const label = qtyToggle.querySelector('div:last-child');
+              if (label) label.textContent = 'Antal: ' + qty;
+            }
+          });
+        });
+      }
+    
+      // Hjälpare
+      const getV = (id) => (document.getElementById(id)?.value || '').trim();
+      const req  = (v, name) => { if (!v) throw new Error('Fyll i: ' + name); return v; };
+      const num  = (v, name) => {
+        const n = parseInt(v, 10);
+        if (Number.isNaN(n)) throw new Error(name + ' måste vara ett tal');
+        return n;
+      };
+      function inRange(n, min, max, name){
+        if (n < min || n > max) throw new Error(`${name} måste vara ${min}–${max} mm`);
+        return n;
+      }
+    
+      async function createCheckout(metadata) {
+        const r = await fetch(`${API_BASE}/api/checkout/create-session`, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            items: [{ price: PRICE_ID, quantity: qty }],
+            metadata
+          })
+        });
+        const raw = await r.text();
+        let data = null; try { data = raw ? JSON.parse(raw) : null; } catch {}
+        if (!r.ok) throw new Error((data && data.message) || `HTTP ${r.status}`);
+        if (!data || !data.url) throw new Error('Oväntat svar från servern.');
+        return data.url;
+      }
+    
+      // Köp
+      const btn = document.getElementById('buy-sappho');
+      const statusEl = document.getElementById('sappho-status');
+    
+      btn?.addEventListener('click', async () => {
+        try {
+          btn.disabled = true;
+          statusEl.textContent = 'Skapar betalning…';
+    
+          const glas = req(getV('sappho-glas'), 'Glas');
+          const farg = req(getV('sappho-farg'), 'Färg');
+          const opp  = req(getV('sappho-opp'),  'Öppningsriktning');
+          const slag = req(getV('sappho-slag'), 'Slagriktning');
+    
+          const bredd = inRange(num(req(getV('sappho-bredd'), 'Bredd (mm)'), 'Bredd (mm)'), 670, 1050, 'Bredd (mm)');
+          const hojd  = inRange(num(req(getV('sappho-hojd'),  'Höjd (mm)'),  'Höjd (mm)'), 1750, 2100, 'Höjd (mm)');
+    
+          const url = await createCheckout({
+            produkt: 'Sappho Dörr',
+            serie: 'Designserien',
+            glas: glas,
+            farg: farg,
+            oppningsriktning: opp,
+            slagriktning: slag,
+            bredd_mm: String(bredd),
+            hojd_mm: String(hojd),
+            antal: String(qty),
+            referens_url: location.href
+          });
+    
+          window.location.href = url;
+        } catch (e) {
+          console.error('[Checkout error]', e);
+          alert('Kunde inte starta betalningen: ' + e.message);
+        } finally {
+          btn.disabled = false;
+          statusEl.textContent = '';
+        }
+      });
+    })();
+    </script>    
 </body>
 </html>
