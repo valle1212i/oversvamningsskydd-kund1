@@ -235,16 +235,98 @@ app.post("/api/stripe/webhook", async (req, res) => {
     return res.status(400).send("Signature verification failed");
   }
 
+  // --- Hjälpare: spara/uppdatera betalning i Mongo ---
+  async function upsertPaymentFromSession(session) {
+    try {
+      if (!paymentsCol) return;
+
+      // Hämta full session inkl. line_items & payment_intent
+      const full = await stripe.checkout.sessions.retrieve(session.id, {
+        expand: ["line_items.data.price.product", "payment_intent"],
+      });
+
+      const pi =
+        full.payment_intent && typeof full.payment_intent === "object"
+          ? full.payment_intent
+          : null;
+
+      const doc = {
+        sessionId: full.id,
+        status: full.status,                 // complete / open / expired
+        mode: full.mode,                     // "payment"
+        amount_total: full.amount_total,     // i öre
+        currency: full.currency,
+        customer_email:
+          full.customer_details?.email || full.customer_email || null,
+        created: new Date(
+          (full.created || Math.floor(Date.now() / 1000)) * 1000
+        ),
+        stripe_created: full.created || null,
+
+        payment_intent_id: pi?.id || null,
+        payment_status: full.payment_status || pi?.status || null,
+        charge_id: pi?.latest_charge || null,
+
+        metadata: full.metadata || {},
+        line_items: (full.line_items?.data || []).map((li) => ({
+          quantity: li.quantity,
+          amount_subtotal: li.amount_subtotal,
+          amount_total: li.amount_total,
+          currency: li.currency,
+          price_id: li.price?.id || null,
+          product_id: li.price?.product || null,
+          product_name:
+            li.price?.product?.name ||
+            li.description ||
+            li.price?.nickname ||
+            null,
+        })),
+
+        // etiketter för filtrering i kundportalen
+        source: "oversvamningsskydd",
+        merchant: {
+          email: "edward@vattentrygg.se",
+          name: "Vattentrygg",
+        },
+
+        updatedAt: new Date(),
+      };
+
+      await paymentsCol.updateOne(
+        { sessionId: doc.sessionId },
+        { $set: doc, $setOnInsert: { insertedAt: new Date() } },
+        { upsert: true }
+      );
+    } catch (e) {
+      console.error("Mongo upsert error:", e);
+    }
+  }
+
   try {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
-        console.log("✅ checkout.session.completed", session.id, session.mode);
+        await upsertPaymentFromSession(session);
+        console.log("✅ Saved checkout.session.completed", session.id);
         break;
       }
       case "payment_intent.succeeded": {
+        // fallback: om vi får PI först/ensamt, slå upp session
         const pi = event.data.object;
-        console.log("✅ payment_intent.succeeded", pi.id, pi.amount);
+        try {
+          const sessions = await stripe.checkout.sessions.list({
+            payment_intent: pi.id,
+            limit: 1,
+          });
+          if (sessions.data[0]) {
+            await upsertPaymentFromSession(sessions.data[0]);
+            console.log("✅ Updated from PI", pi.id);
+          } else {
+            console.log("PI had no associated session (skipping)", pi.id);
+          }
+        } catch (e) {
+          console.warn("PI->Session lookup failed:", e.message);
+        }
         break;
       }
       default:
