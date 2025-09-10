@@ -395,13 +395,13 @@
         btn.addEventListener('click', async () => {
           try {
             // Validera config
-            const glas  = (sel && sel.value) ? sel.value : '';
-            const width = wInput ? parseInt(wInput.value, 10) : NaN;
-            const height= hInput ? parseInt(hInput.value, 10) : NaN;
-    
-           
-            assertInRange(width, 1200, 1800, 'Bredd');
-            assertInRange(height,1750, 2100, 'Höjd');
+            const width  = (wInput && wInput.value) ? parseInt(wInput.value, 10) : null;
+const height = (hInput && hInput.value) ? parseInt(hInput.value, 10) : null;
+
+// Validera ENDAST om kund faktiskt angivit mått
+if (width  !== null) assertInRange(width,  1200, 1800, 'Bredd');
+if (height !== null) assertInRange(height, 1750, 2100, 'Höjd');
+
     
             btn.disabled = true;
             statusEl.textContent = 'Skapar betalning…';
