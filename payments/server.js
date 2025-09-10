@@ -4,6 +4,58 @@ import express from "express";
 import cors from "cors";
 import Stripe from "stripe";
 import getRawBody from "raw-body";
+// --- MongoDB (NYTT) ---
+import { MongoClient, ServerApiVersion } from "mongodb";
+
+const MONGODB_URI = process.env.MONGODB_URI || "";
+const MONGO_DB = process.env.MONGO_DB || "kundportal";
+const MONGO_COLLECTION = process.env.MONGO_COLLECTION || "payments";
+
+let mongoClient;
+let paymentsCol; // används senare i webhook + API
+
+async function initMongo() {
+  if (!MONGODB_URI) {
+    console.warn("⚠️ Ingen MONGODB_URI satt; betalningar sparas inte i MongoDB.");
+    return;
+  }
+
+  mongoClient = new MongoClient(MONGODB_URI, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    },
+    // valfria timeouts
+    // connectTimeoutMS: 15000,
+    // serverSelectionTimeoutMS: 15000,
+  });
+
+  await mongoClient.connect();
+  const db = mongoClient.db(MONGO_DB);
+  paymentsCol = db.collection(MONGO_COLLECTION);
+
+  // Index (bra för sökning och unik sessionId)
+  await paymentsCol.createIndex({ sessionId: 1 }, { unique: true });
+  await paymentsCol.createIndex({ customer_email: 1, stripe_created: -1 });
+
+  console.log(`✅ MongoDB ansluten: db=${MONGO_DB}, col=${MONGO_COLLECTION}`);
+}
+
+initMongo().catch((err) => {
+  console.error("❌ Mongo init error:", err);
+});
+
+// Graceful shutdown
+process.on("SIGINT", async () => {
+  try { await mongoClient?.close(); } catch {}
+  process.exit(0);
+});
+process.on("SIGTERM", async () => {
+  try { await mongoClient?.close(); } catch {}
+  process.exit(0);
+});
+
 
 const app = express();
 

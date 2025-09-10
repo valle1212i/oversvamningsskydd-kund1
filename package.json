@@ -4,20 +4,21 @@
     "private": true,
     "type": "module",
     "scripts": {
-      "start": "node payments/server.js",
-      "dev": "NODE_ENV=development node payments/server.js"
+        "start": "node payments/server.js",
+        "dev": "NODE_ENV=development node payments/server.js"
     },
     "engines": {
-      "node": ">=18"
+        "node": ">=18"
     },
     "dependencies": {
-      "body-parser": "^1.20.3",
-      "cors": "^2.8.5",
-      "dotenv": "^16.4.5",
-      "express": "^4.19.2",
-      "express-rate-limit": "^8.0.1",
-      "openai": "^4.57.0",
-      "stripe": "^16.0.0"
+        "bcrypt": "^6.0.0",
+        "body-parser": "^1.20.3",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.5",
+        "express": "^4.19.2",
+        "express-rate-limit": "^8.0.1",
+        "mongodb": "^6.19.0",
+        "openai": "^4.57.0",
+        "stripe": "^16.0.0"
     }
-  }
-  
+}
