@@ -84,6 +84,13 @@ app.use(cors(corsOptions));
 // Viktigt: låt cors hantera preflight så att rätt headers skickas
 app.options("*", cors(corsOptions));
 
+/* --------------- Stripe klient --------------- */
+if (!process.env.STRIPE_SECRET_KEY) {
+  console.error("❌ Missing STRIPE_SECRET_KEY");
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+  apiVersion: "2024-06-20",
+});
 
 /* ----------- Hjälpare & config ---------- */
 const SUCCESS_URL = process.env.SUCCESS_URL || "";
@@ -419,7 +426,7 @@ app.post("/api/payments/refund", async (req, res) => {
 
     return res.json({ success: true, refund });
   } catch (err) {
-    console.error("POST /api/refund error:", {
+    console.error("POST /api/payments/refund error:", {
       message: err?.message,
       code: err?.code,
       type: err?.type,
@@ -427,7 +434,7 @@ app.post("/api/payments/refund", async (req, res) => {
     });
     const msg = err?.raw?.message || err?.message || "refund error";
     return res.status(400).json({ success: false, message: msg });
-  }
+  }  
 });
 
 // Checkout – primär route
