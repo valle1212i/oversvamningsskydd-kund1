@@ -63,6 +63,7 @@ const app = express();
 const ALLOWED = [
   "https://oversvamningsskydd-kund1.onrender.com",
   "http://localhost:5500",
+  "https://source-database.onrender.com",
   process.env.FRONTEND_ORIGIN,
 ].filter(Boolean);
 
