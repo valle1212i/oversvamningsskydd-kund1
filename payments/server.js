@@ -67,27 +67,23 @@ const ALLOWED = [
   process.env.FRONTEND_ORIGIN,
 ].filter(Boolean);
 
-app.use(
-  cors({
-    origin: (origin, cb) => {
-      // tillåt även curl/servrar utan Origin
-      if (!origin || ALLOWED.includes(origin)) return cb(null, true);
-      return cb(new Error(`CORS blocked: ${origin}`));
-    },
-    credentials: false,
-  })
-);
+const corsOptions = {
+  origin: (origin, cb) => {
+    // tillåt även curl/servrar utan Origin (t.ex. webhookar, health, etc.)
+    if (!origin || ALLOWED.includes(origin)) return cb(null, true);
+    return cb(new Error(`CORS blocked: ${origin}`));
+  },
+  credentials: false,
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "x-csrf-token", "authorization", "x-requested-with"],
+  optionsSuccessStatus: 204,
+  maxAge: 600, // cachea preflight i 10 min
+};
 
-// Preflight
-app.options("*", (_req, res) => res.sendStatus(204));
+app.use(cors(corsOptions));
+// Viktigt: låt cors hantera preflight så att rätt headers skickas
+app.options("*", cors(corsOptions));
 
-/* --------------- Stripe klient --------------- */
-if (!process.env.STRIPE_SECRET_KEY) {
-  console.error("❌ Missing STRIPE_SECRET_KEY");
-}
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2024-06-20",
-});
 
 /* ----------- Hjälpare & config ---------- */
 const SUCCESS_URL = process.env.SUCCESS_URL || "";
