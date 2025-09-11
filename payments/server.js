@@ -358,18 +358,27 @@ app.post("/api/payments/refund", async (req, res) => {
 
     // Hämta full session inkl. PI och senaste charge
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      // Behåll expand – vi stödjer både objekt och sträng nedan
       expand: ["payment_intent.latest_charge"],
     });
-
+    
     const pi =
       session.payment_intent && typeof session.payment_intent === "object"
         ? session.payment_intent
         : null;
-
-    const chargeId = pi?.latest_charge || null;
+    
+    // Se till att det vi skickar till Stripe är en sträng (ID), inte ett objekt
+    const chargeId =
+      typeof pi?.latest_charge === "string"
+        ? pi.latest_charge
+        : (pi?.latest_charge?.id || null);
+    
     if (!chargeId) {
-      return res.status(400).json({ success: false, message: "Ingen charge kopplad till denna session" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Ingen charge kopplad till denna session" });
     }
+    
 
     // Belopp i öre – default till hela mottagna beloppet (eller amount_total som fallback)
     const fullAmount =
