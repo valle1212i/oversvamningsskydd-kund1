@@ -344,9 +344,9 @@ app.post("/api/stripe/webhook", async (req, res) => {
 app.use(express.json());
 
 // === Refund endpoint ===
-// POST /api/refund
+// POST /api/payments/refund
 // Body: { sessionId: string, amount?: number (öre), reason?: 'requested_by_customer'|'duplicate'|'fraudulent' }
-app.post("/api/refund", async (req, res) => {
+app.post("/api/payments/refund", async (req, res) => {
   try {
     const { sessionId, amount, reason } = req.body || {};
     if (!sessionId || typeof sessionId !== "string") {
