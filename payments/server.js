@@ -254,47 +254,67 @@ app.post("/api/stripe/webhook", async (req, res) => {
           ? full.payment_intent
           : null;
 
-      const doc = {
-        sessionId: full.id,
-        status: full.status,                 // complete / open / expired
-        mode: full.mode,                     // "payment"
-        amount_total: full.amount_total,     // i öre
-        currency: full.currency,
-        customer_email:
-          full.customer_details?.email || full.customer_email || null,
-        created: new Date(
-          (full.created || Math.floor(Date.now() / 1000)) * 1000
-        ),
-        stripe_created: full.created || null,
+            // HÄMTA KORTDETALJER FRÅN CHARGE (brand, last4, exp, mm)
+  let pmDetails = null;
+  try {
+    const chargeIdLocal =
+      typeof pi?.latest_charge === "string"
+        ? pi.latest_charge
+        : (pi?.latest_charge?.id || null);
 
-        payment_intent_id: pi?.id || null,
-        payment_status: full.payment_status || pi?.status || null,
-        charge_id: pi?.latest_charge || null,
+    if (chargeIdLocal) {
+      const charge = await stripe.charges.retrieve(chargeIdLocal);
+      const c = charge?.payment_method_details?.card;
+      if (c) {
+        pmDetails = {
+          brand: c.brand || null,          // 'visa' | 'mastercard' | 'amex' ...
+          last4: c.last4 || null,
+          exp_month: c.exp_month || null,
+          exp_year: c.exp_year || null,
+          funding: c.funding || null,      // 'debit' | 'credit' | ...
+          country: c.country || null
+        };
+      }
+    }
+  } catch (e) {
+    console.warn("Could not retrieve charge for card details:", e.message);
+  }
 
-        metadata: full.metadata || {},
-        line_items: (full.line_items?.data || []).map((li) => ({
-          quantity: li.quantity,
-          amount_subtotal: li.amount_subtotal,
-          amount_total: li.amount_total,
-          currency: li.currency,
-          price_id: li.price?.id || null,
-          product_id: li.price?.product || null,
-          product_name:
-            li.price?.product?.name ||
-            li.description ||
-            li.price?.nickname ||
-            null,
-        })),
 
-        // etiketter för filtrering i kundportalen
-        source: "oversvamningsskydd",
-        merchant: {
-          email: "edward@vattentrygg.se",
-          name: "Vattentrygg",
-        },
-
-        updatedAt: new Date(),
-      };
+          const doc = {
+            sessionId: full.id,
+            status: full.status,
+            mode: full.mode,
+            amount_total: full.amount_total,
+            currency: full.currency,
+            customer_email: full.customer_details?.email || full.customer_email || null,
+            created: new Date((full.created || Math.floor(Date.now()/1000)) * 1000),
+            stripe_created: full.created || null,
+        
+            payment_intent_id: pi?.id || null,
+            payment_status: full.payment_status || pi?.status || null,
+            charge_id: pi?.latest_charge || null,
+        
+            // --- lägg till direkt efter blocket ovan ---
+            payment_method_details: pmDetails,
+        
+            metadata: full.metadata || {},
+            line_items: (full.line_items?.data || []).map((li) => ({
+              quantity: li.quantity,
+              amount_subtotal: li.amount_subtotal,
+              amount_total: li.amount_total,
+              currency: li.currency,
+              price_id: li.price?.id || null,
+              product_id: li.price?.product || null,
+              product_name:
+                li.price?.product?.name || li.description || li.price?.nickname || null,
+            })),
+        
+            source: "oversvamningsskydd",
+            merchant: { email: "edward@vattentrygg.se", name: "Vattentrygg" },
+        
+            updatedAt: new Date(),
+          };        
 
       await paymentsCol.updateOne(
         { sessionId: doc.sessionId },
