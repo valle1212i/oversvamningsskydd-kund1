@@ -342,6 +342,97 @@ app.post("/api/stripe/webhook", async (req, res) => {
 // JSON body parser för alla övriga endpoints (efter webhook!)
 app.use(express.json());
 
+// === Refund endpoint ===
+// POST /api/refund
+// Body: { sessionId: string, amount?: number (öre), reason?: 'requested_by_customer'|'duplicate'|'fraudulent' }
+app.post("/api/refund", async (req, res) => {
+  try {
+    const { sessionId, amount, reason } = req.body || {};
+    if (!sessionId || typeof sessionId !== "string") {
+      return res.status(400).json({ success: false, message: "sessionId krävs" });
+    }
+
+    // Hämta full session inkl. PI och senaste charge
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ["payment_intent.latest_charge"],
+    });
+
+    const pi =
+      session.payment_intent && typeof session.payment_intent === "object"
+        ? session.payment_intent
+        : null;
+
+    const chargeId = pi?.latest_charge || null;
+    if (!chargeId) {
+      return res.status(400).json({ success: false, message: "Ingen charge kopplad till denna session" });
+    }
+
+    // Belopp i öre – default till hela mottagna beloppet (eller amount_total som fallback)
+    const fullAmount =
+      (typeof pi?.amount_received === "number" && pi.amount_received > 0)
+        ? pi.amount_received
+        : (session.amount_total || 0);
+
+    const amountToRefund = Number.isInteger(amount) && amount > 0 ? amount : fullAmount;
+
+    // Skapa refund i Stripe
+    const refund = await stripe.refunds.create({
+      charge: chargeId,
+      amount: amountToRefund,
+      reason: reason || "requested_by_customer",
+      metadata: { source: "kundportal" }
+    });
+
+    // Uppdatera i Mongo (om ansluten)
+    if (paymentsCol) {
+      // Lägg till refund-post och summera återbetalt
+      await paymentsCol.updateOne(
+        { sessionId },
+        {
+          $set: {
+            updatedAt: new Date(),
+            refund_last_id: refund.id,
+            refund_last_status: refund.status
+          },
+          $push: {
+            refunds: {
+              id: refund.id,
+              status: refund.status,
+              amount: refund.amount,
+              created: new Date(refund.created * 1000),
+              charge: refund.charge,
+              reason: refund.reason || null
+            }
+          },
+          $inc: { refunded_amount: refund.amount }
+        },
+        { upsert: false }
+      );
+
+      // Kolla om full återbetalning uppnådd → markera som refunded
+      const doc = await paymentsCol.findOne({ sessionId });
+      if (doc) {
+        const targetTotal = doc.amount_total || fullAmount;
+        const refundedSoFar = doc.refunded_amount || 0;
+        if (Number.isFinite(targetTotal) && refundedSoFar >= targetTotal) {
+          await paymentsCol.updateOne({ sessionId }, { $set: { status: "refunded" } });
+        }
+      }
+    }
+
+    return res.json({ success: true, refund });
+  } catch (err) {
+    console.error("POST /api/refund error:", {
+      message: err?.message,
+      code: err?.code,
+      type: err?.type,
+      raw: err?.raw?.message
+    });
+    const msg = err?.raw?.message || err?.message || "refund error";
+    return res.status(400).json({ success: false, message: msg });
+  }
+});
+
 // Checkout – primär route
 app.post("/api/checkout/create-session", handleCreateSession);
 
