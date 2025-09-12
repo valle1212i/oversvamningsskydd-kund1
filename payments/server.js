@@ -366,6 +366,33 @@ app.post("/api/stripe/webhook", async (req, res) => {
 // JSON body parser för alla övriga endpoints (efter webhook!)
 app.use(express.json());
 
+// === Hämta en betalning ===
+// GET /api/payments/:sessionId
+app.get("/api/payments/:sessionId", async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    if (!sessionId) {
+      return res.status(400).json({ success: false, message: "sessionId krävs" });
+    }
+
+    if (!paymentsCol) {
+      return res.status(500).json({ success: false, message: "Databas ej initierad" });
+    }
+
+    const payment = await paymentsCol.findOne({ sessionId });
+
+    if (!payment) {
+      return res.status(404).json({ success: false, message: "Betalning ej hittad" });
+    }
+
+    return res.json({ success: true, payment });
+  } catch (err) {
+    console.error("GET /api/payments/:sessionId error:", err);
+    return res.status(500).json({ success: false, message: "Serverfel" });
+  }
+});
+
+
 // === Refund endpoint ===
 // POST /api/payments/refund
 // Body: { sessionId: string, amount?: number (öre), reason?: 'requested_by_customer'|'duplicate'|'fraudulent' }
