@@ -3,6 +3,8 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { OpenAI } from 'openai';
+import fs from 'node:fs/promises';
+import crypto from 'node:crypto';
 
 // Ladda JSON utan import-attributes (mest kompatibelt)
 import { readFileSync } from 'node:fs';
@@ -12,6 +14,7 @@ import { dirname, join } from 'node:path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// --- Datafiler ---
 const products = JSON.parse(
   readFileSync(join(__dirname, 'data', 'products.json'), 'utf8')
 );
@@ -19,9 +22,10 @@ const faq = JSON.parse(
   readFileSync(join(__dirname, 'data', 'faq.json'), 'utf8')
 );
 
-
+// --- App & middleware ---
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '32kb' }));
+app.set('trust proxy', true); // så att req.ip funkar bakom proxy (Render/Heroku etc.)
 
 /* -----------------------------
    CORS (tillåt din frontend + lokalt)
@@ -83,7 +87,28 @@ ${faqLines}
 }
 
 /* -----------------------------
-   API
+   Hjälpare för IP-hash & cooldown
+-------------------------------- */
+function hashIp(ip, salt) {
+  try {
+    return crypto.createHash('sha256').update(`${ip}|${salt}`).digest('hex');
+  } catch {
+    return null;
+  }
+}
+
+// Mycket enkel "cooldown" i minne: max 1 logg/10s per IP-hash
+const lastSeen = new Map(); // ipHash -> timestamp (ms)
+function hitCooldown(ipHash, ms = 10_000) {
+  const now = Date.now();
+  const prev = lastSeen.get(ipHash) || 0;
+  if (now - prev < ms) return true;
+  lastSeen.set(ipHash, now);
+  return false;
+}
+
+/* -----------------------------
+   API: Aurora (chat)
 -------------------------------- */
 app.post('/api/aurora/ask', async (req, res) => {
   try {
@@ -116,6 +141,62 @@ app.post('/api/aurora/ask', async (req, res) => {
   }
 });
 
+/* -----------------------------
+   API: Visit-logg (kallas från CMP)
+   - Haschar IP (ingen klartext lagras)
+   - Enkel spam-skydd (cooldown)
+   - Skriver till JSON Lines-fil (visits.log)
+-------------------------------- */
+app.post('/api/visit', async (req, res) => {
+  try {
+    // IP från proxy-kedja eller socket
+    // Express med trust proxy ger req.ip som redan plockar korrekt ip från X-Forwarded-For
+    const rawIp =
+      req.ip ||
+      req.headers['x-forwarded-for'] ||
+      req.socket?.remoteAddress ||
+      'unknown';
+
+    // Hasha IP så att vi undviker klartext personuppgift
+    const ipSalt = process.env.IP_SALT || 'change-me';
+    const ipHash = hashIp(String(rawIp), ipSalt) || 'na';
+
+    // Body från klienten (CMP skickar path/ref/ua)
+    const { path, ref, ua } = Object(req.body || {});
+    const safePath = typeof path === 'string' ? path.slice(0, 300) : null;
+    const safeRef = typeof ref === 'string' ? ref.slice(0, 1000) : null;
+    const safeUa =
+      typeof ua === 'string'
+        ? ua.slice(0, 400)
+        : (req.get('user-agent') || '').slice(0, 400);
+
+    // Throttla: max 1 logg / 10 sek per ipHash
+    if (hitCooldown(ipHash, 10_000)) {
+      return res.status(202).json({ ok: true, throttled: true });
+    }
+
+    // Bygg loggrad
+    const entry = {
+      ts: new Date().toISOString(),
+      ip_hash: ipHash,
+      path: safePath,
+      ref: safeRef,
+      ua: safeUa,
+    };
+
+    // Skriv en rad JSON (JSONL) — OBS: på Render/Heroku är disk ofta ephemeral
+    await fs.appendFile(join(__dirname, 'visits.log'), JSON.stringify(entry) + '\n', 'utf8');
+
+    return res.status(204).end();
+  } catch (err) {
+    console.error('visit error:', err);
+    return res.status(500).json({ ok: false });
+  }
+});
+
+/* -----------------------------
+   Healthcheck & rot
+-------------------------------- */
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
 app.get('/', (_req, res) =>
