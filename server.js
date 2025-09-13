@@ -1,4 +1,5 @@
-// server.js
+// server.js (Aurora – global)
+// ----------------------------------------------------
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -6,7 +7,7 @@ import { OpenAI } from 'openai';
 import fs from 'node:fs/promises';
 import crypto from 'node:crypto';
 
-// Ladda JSON utan import-attributes (mest kompatibelt)
+// Node stdlib (för datafiler)
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -14,7 +15,9 @@ import { dirname, join } from 'node:path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// --- Datafiler ---
+// ----------------------------------------------------
+// Ladda datafiler (produkter + FAQ)
+// ----------------------------------------------------
 const products = JSON.parse(
   readFileSync(join(__dirname, 'data', 'products.json'), 'utf8')
 );
@@ -22,23 +25,21 @@ const faq = JSON.parse(
   readFileSync(join(__dirname, 'data', 'faq.json'), 'utf8')
 );
 
-// --- App & middleware ---
+// ----------------------------------------------------
+// App & middleware
+// ----------------------------------------------------
 const app = express();
 app.use(express.json({ limit: '32kb' }));
-app.set('trust proxy', true); // så att req.ip funkar bakom proxy (Render/Heroku etc.)
+app.set('trust proxy', true); // korrekt IP bakom proxy (Render/Heroku)
 
-/* -----------------------------
-   CORS (tillåt din frontend + lokalt)
--------------------------------- */
 const ALLOWED_ORIGINS = new Set([
-  'http://localhost:5500',                             // Live Server (lokalt)
-  'https://oversvamningsskydd-kund1.onrender.com',    // din statiska Render-sajt
-  'https://vattentrygg.se',                        // ev. egen domän
+  'http://localhost:5500',
+  'https://oversvamningsskydd-kund1.onrender.com',
+  'https://vattentrygg.se',
 ]);
 
 const corsOptions = {
   origin(origin, cb) {
-    // tillåt även "no origin" (curl, Postman, health checks)
     if (!origin || ALLOWED_ORIGINS.has(origin)) return cb(null, true);
     return cb(new Error(`CORS blocked for origin: ${origin}`));
   },
@@ -49,16 +50,16 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // svara korrekt på preflight
+app.options('*', cors(corsOptions));
 
-/* -----------------------------
-   OpenAI
--------------------------------- */
+// ----------------------------------------------------
+// OpenAI
+// ----------------------------------------------------
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-/* -----------------------------
-   Kontextbygge (MVP)
--------------------------------- */
+// ----------------------------------------------------
+// Kontextbygge för Aurora
+// ----------------------------------------------------
 function buildContext() {
   const bullets = [
     'You are Aurora, an expert assistant for flood protection in Sweden.',
@@ -86,9 +87,9 @@ ${faqLines}
 `;
 }
 
-/* -----------------------------
-   Hjälpare för IP-hash & cooldown
--------------------------------- */
+// ----------------------------------------------------
+// Hjälpare: IP-hash & cooldown
+// ----------------------------------------------------
 function hashIp(ip, salt) {
   try {
     return crypto.createHash('sha256').update(`${ip}|${salt}`).digest('hex');
@@ -97,8 +98,8 @@ function hashIp(ip, salt) {
   }
 }
 
-// Mycket enkel "cooldown" i minne: max 1 logg/10s per IP-hash
-const lastSeen = new Map(); // ipHash -> timestamp (ms)
+// Generell cooldown-karta (kan återanvändas av olika routes)
+const lastSeen = new Map(); // ipHash -> timestamp(ms)
 function hitCooldown(ipHash, ms = 10_000) {
   const now = Date.now();
   const prev = lastSeen.get(ipHash) || 0;
@@ -107,9 +108,32 @@ function hitCooldown(ipHash, ms = 10_000) {
   return false;
 }
 
-/* -----------------------------
-   API: Aurora (chat)
--------------------------------- */
+// ----------------------------------------------------
+// Hjälpare: POST JSON med timeout (för portal-webhook)
+// Node 18+ har global fetch.
+// ----------------------------------------------------
+async function postJsonWithTimeout(url, { headers = {}, body = {}, timeoutMs = 8000 } = {}) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...headers },
+      body: JSON.stringify(body),
+      signal: ctrl.signal,
+    });
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch { data = { raw: text }; }
+    return { ok: res.ok, status: res.status, data };
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+// ----------------------------------------------------
+// API: Aurora (chat)
+// ----------------------------------------------------
 app.post('/api/aurora/ask', async (req, res) => {
   try {
     const { question, history = [] } = req.body || {};
@@ -118,7 +142,6 @@ app.post('/api/aurora/ask', async (req, res) => {
     }
 
     const system = buildContext();
-
     const messages = [
       { role: 'system', content: system },
       ...history.slice(-6),
@@ -141,27 +164,24 @@ app.post('/api/aurora/ask', async (req, res) => {
   }
 });
 
-/* -----------------------------
-   API: Visit-logg (kallas från CMP)
-   - Haschar IP (ingen klartext lagras)
-   - Enkel spam-skydd (cooldown)
-   - Skriver till JSON Lines-fil (visits.log)
--------------------------------- */
+// ----------------------------------------------------
+// API: Visit-logg (kallas från CMP)
+//  - Haschar IP (ingen klartext lagras)
+//  - Enkel spam-skydd (cooldown)
+//  - Skriver till JSON Lines-fil (visits.log)
+// OBS: Disk på Render är ephemeral – loggen är mest för kortsiktig felsökning.
+// ----------------------------------------------------
 app.post('/api/visit', async (req, res) => {
   try {
-    // IP från proxy-kedja eller socket
-    // Express med trust proxy ger req.ip som redan plockar korrekt ip från X-Forwarded-For
     const rawIp =
       req.ip ||
       req.headers['x-forwarded-for'] ||
       req.socket?.remoteAddress ||
       'unknown';
 
-    // Hasha IP så att vi undviker klartext personuppgift
     const ipSalt = process.env.IP_SALT || 'change-me';
     const ipHash = hashIp(String(rawIp), ipSalt) || 'na';
 
-    // Body från klienten (CMP skickar path/ref/ua)
     const { path, ref, ua } = Object(req.body || {});
     const safePath = typeof path === 'string' ? path.slice(0, 300) : null;
     const safeRef = typeof ref === 'string' ? ref.slice(0, 1000) : null;
@@ -170,12 +190,10 @@ app.post('/api/visit', async (req, res) => {
         ? ua.slice(0, 400)
         : (req.get('user-agent') || '').slice(0, 400);
 
-    // Throttla: max 1 logg / 10 sek per ipHash
     if (hitCooldown(ipHash, 10_000)) {
       return res.status(202).json({ ok: true, throttled: true });
     }
 
-    // Bygg loggrad
     const entry = {
       ts: new Date().toISOString(),
       ip_hash: ipHash,
@@ -184,9 +202,7 @@ app.post('/api/visit', async (req, res) => {
       ua: safeUa,
     };
 
-    // Skriv en rad JSON (JSONL) — OBS: på Render/Heroku är disk ofta ephemeral
     await fs.appendFile(join(__dirname, 'visits.log'), JSON.stringify(entry) + '\n', 'utf8');
-
     return res.status(204).end();
   } catch (err) {
     console.error('visit error:', err);
@@ -194,17 +210,102 @@ app.post('/api/visit', async (req, res) => {
   }
 });
 
-/* -----------------------------
-   Healthcheck & rot
--------------------------------- */
-app.get('/api/health', (_req, res) => res.json({ ok: true }));
+// ----------------------------------------------------
+// API: Contact → vidarebefordra till kundportalen
+//  - Läser Webflow-fält (name-4, email-7, message-8)
+//  - Rate-limit via IP-hash (10s)
+//  - Skickar till PORTAL_WEBHOOK_URL med Bearer PORTAL_INBOUND_TOKEN
+// ----------------------------------------------------
+const CONTACT_HONEYPOT_FIELD = 'company'; // lägg ett osynligt fält i formuläret
+const contactSeen = new Map(); // ipHash -> ts
 
+function contactCooldown(ipHash, ms = 10_000) {
+  const now = Date.now();
+  const prev = contactSeen.get(ipHash) || 0;
+  if (now - prev < ms) return true;
+  contactSeen.set(ipHash, now);
+  return false;
+}
+
+app.post('/api/contact', async (req, res) => {
+  try {
+    // IP-hash för enkel rate limit + minimal spårning
+    const rawIp =
+      req.ip ||
+      req.headers['x-forwarded-for'] ||
+      req.socket?.remoteAddress ||
+      'unknown';
+    const ipSalt = process.env.IP_SALT || 'change-me';
+    const ipHash = hashIp(String(rawIp), ipSalt) || 'na';
+
+    if (contactCooldown(ipHash, 10_000)) {
+      return res.status(429).json({ success: false, message: 'För många förfrågningar. Försök igen strax.' });
+    }
+
+    const b = Object(req.body || {});
+    const name = (b.name || b['name-4'] || '').toString().trim().slice(0, 150);
+    const email = (b.email || b['email-7'] || '').toString().trim().slice(0, 200);
+    const message = (b.message || b['message-8'] || '').toString().trim().slice(0, 5000);
+    const phone = (b.phone || b['phone-number'] || '').toString().trim().slice(0, 50);
+
+    // Honeypot: om ifyllt -> behandla som OK men gör inget
+    if ((b[CONTACT_HONEYPOT_FIELD] || '').toString().trim()) {
+      return res.status(202).json({ success: true, queued: true });
+    }
+
+    // Minimal validering
+    if (!email || !/.+@.+\..+/.test(email)) {
+      return res.status(400).json({ success: false, message: 'Ogiltig e-postadress' });
+    }
+    if (!message) {
+      return res.status(400).json({ success: false, message: 'Meddelande krävs' });
+    }
+
+    const url = process.env.PORTAL_WEBHOOK_URL;
+    const token = process.env.PORTAL_INBOUND_TOKEN;
+    if (!url || !token) {
+      return res.status(500).json({ success: false, message: 'Saknar portal-konfiguration' });
+    }
+
+    const payload = {
+      email,
+      name,
+      message,
+      phone,
+      source: 'vattentrygg.se',
+      page: req.get('referer') || null,
+      ip_hash: ipHash,
+      ua: req.get('user-agent') || null,
+    };
+
+    const { ok, status, data } = await postJsonWithTimeout(url, {
+      headers: { Authorization: `Bearer ${token}` },
+      body: payload,
+      timeoutMs: 8000,
+    });
+
+    if (!ok) {
+      console.error('Portal webhook fel:', status, data);
+      return res.status(502).json({ success: false, message: 'Kunde inte skicka till kundportalen' });
+    }
+
+    return res.json({ success: true, ticket: data.ticket || null });
+  } catch (err) {
+    console.error('contact error:', err);
+    return res.status(500).json({ success: false, message: 'Serverfel' });
+  }
+});
+
+// ----------------------------------------------------
+// Healthcheck & rot
+// ----------------------------------------------------
+app.get('/api/health', (_req, res) => res.json({ ok: true }));
 app.get('/', (_req, res) =>
   res.status(200).send('Aurora backend up. Use POST /api/aurora/ask')
 );
 
-/* -----------------------------
-   Start
--------------------------------- */
+// ----------------------------------------------------
+// Start
+// ----------------------------------------------------
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log('Aurora API listening on', PORT));
