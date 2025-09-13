@@ -308,4 +308,22 @@ app.get('/', (_req, res) =>
 // Start
 // ----------------------------------------------------
 const PORT = process.env.PORT || 8080;
+// Debug: vilken version och vilka routes finns?
+app.get('/_whoami', (req, res) => {
+  res.json({ ok: true, version: 'contact-route-added' });
+});
+
+// Debug: skriv ut alla registrerade routes i loggen vid start
+function dumpRoutes() {
+  const routes = [];
+  app._router.stack.forEach((m) => {
+    if (m.route && m.route.path) {
+      const methods = Object.keys(m.route.methods).join(',').toUpperCase();
+      routes.push(`${methods.padEnd(6)} ${m.route.path}`);
+    }
+  });
+  console.log('Registered routes:\n' + routes.sort().join('\n'));
+}
+dumpRoutes();
+
 app.listen(PORT, () => console.log('Aurora API listening on', PORT));
