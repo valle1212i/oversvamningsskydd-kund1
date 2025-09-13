@@ -33,7 +33,7 @@ app.set('trust proxy', true); // så att req.ip funkar bakom proxy (Render/Herok
 const ALLOWED_ORIGINS = new Set([
   'http://localhost:5500',                             // Live Server (lokalt)
   'https://oversvamningsskydd-kund1.onrender.com',    // din statiska Render-sajt
-  // 'https://www.dindomän.se',                        // ev. egen domän
+  'https://vattentrygg.se',                        // ev. egen domän
 ]);
 
 const corsOptions = {

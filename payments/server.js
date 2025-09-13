@@ -62,6 +62,7 @@ const app = express();
 /* ---------------- CORS ---------------- */
 const ALLOWED = [
   "https://oversvamningsskydd-kund1.onrender.com",
+  "https://vattentrygg.se",
   "http://localhost:5500",
   "https://source-database.onrender.com",
   process.env.FRONTEND_ORIGIN,
