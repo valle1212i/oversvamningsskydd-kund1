@@ -292,7 +292,7 @@
           </ul>
         </div>
         <div class="w-form">
-          <form method="get" data-wf-element-id="b89ec4eb-51ac-494c-b5fd-ab1b75b55453" name="wf-form-Contact-Form" data-name="Contact Form" id="wf-form-contact-form" data-wf-page-id="68b808ead53ada753d9d03d1">
+           <form method="post"data-wf-element-id="b89ec4eb-51ac-494c-b5fd-ab1b75b55453" name="wf-form-Contact-Form" data-name="Contact Form" id="wf-form-contact-form" data-wf-page-id="68b808ead53ada753d9d03d1">
             <div class="input"><label for="name-4" class="input_label">För-efternamn</label><input class="input_field w-input" maxlength="256" name="name-4" data-name="Name 4" placeholder="Ditt namn" type="text" id="name-4"></div>
             <div class="input"><label for="email-7" class="input_label">Email address</label><input class="input_field w-input" maxlength="256" name="email-7" data-name="Email 7" placeholder="email@website.com" type="email" id="email-7" required=""></div>
             <div class="input"><label for="message-8" class="input_label">Ditt meddelande</label><textarea id="message-8" name="message-8" maxlength="5000" data-name="Message 8" placeholder="Skriv ditt meddelande..." class="input_field input_text-area w-input"></textarea></div><label class="w-checkbox checkbox margin-bottom_none">
@@ -300,6 +300,9 @@
               <div class="w-checkbox-input w-checkbox-input--inputType-custom inline-input-0"></div><input type="checkbox" name="agreement-checkbox-4" id="agreement-checkbox-4" data-name="Agreement Checkbox 4" required="" style="opacity:0;position:absolute;z-index:-1"><span for="agreement-checkbox-4" class="checkbox_label w-form-label">I agree to the<a href="#" class="text-link is-secondary text-span_padding">privacy policy</a>.</span>
             </label>
             <div class="button-group is-vertical-stretch"><input type="submit" data-wait="Please wait..." class="button w-button" value="Skicka"></div>
+            <input type="text" name="company" autocomplete="off"
+       tabindex="-1" aria-hidden="true"
+       style="position:absolute;left:-9999px;opacity:0;width:1px;height:1px;">
           </form>
           <div class="form_success-message w-form-done">
             <div>Thank you! We’ll be in touch soon.</div>
@@ -449,72 +452,65 @@
   <script src="js/aurora.js"></script>
   <script>
     (function () {
-      // ✅ Byt till din backend-url om siten hostas på annan domän
-      // t.ex. "https://aurora-backend-kund-oversvamningsskydd.onrender.com"
-      const API_BASE = 'https://<DIN-BACKEND>.onrender.com';
-  
+      // 👉 Kör via samma domän (proxyad backend): lämna tomt för relativ väg.
+      const API_BASE = 'https://aurora-backend-kund-oversvamningsskydd.onrender.com';
+
       const form = document.getElementById('wf-form-contact-form');
       if (!form) return;
-  
+
       const successEl = form.parentElement.querySelector('.w-form-done');
       const errorEl   = form.parentElement.querySelector('.w-form-fail');
       const submitBtn = form.querySelector('input[type="submit"]');
-  
-      function show(el)  { el && (el.style.display = 'block'); }
-      function hide(el)  { el && (el.style.display = 'none'); }
+
+      function show(el){ if (el) el.style.display = 'block'; }
+      function hide(el){ if (el) el.style.display = 'none'; }
       function disable(b){ if (b) { b.disabled = true; b.value = 'Skickar...'; } }
-      function enable(b) { if (b) { b.disabled = false; b.value = 'Skicka'; } }
-  
+      function enable(b){ if (b) { b.disabled = false; b.value = 'Skicka'; } }
+
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         hide(successEl); hide(errorEl);
         disable(submitBtn);
-  
-        // Hämta fält (anpassat till dina ID:n i HTML)
+
         const name    = document.getElementById('name-4')?.value?.trim() || '';
         const email   = document.getElementById('email-7')?.value?.trim() || '';
         const message = document.getElementById('message-8')?.value?.trim() || '';
         const consent = document.getElementById('agreement-checkbox-4')?.checked || false;
-  
-        // Enkel validering
+
+        // Honeypot (måste heta "company")
+        const honeypot = form.querySelector('input[name="company"]')?.value?.trim() || '';
+
         if (!name || !email || !message || !consent) {
-          show(errorEl);
-          enable(submitBtn);
-          return;
+          show(errorEl); enable(submitBtn); return;
         }
-  
-        // Honeypot (lägg ev. till ett dolt input med name="url" i Webflow och lämna tomt)
-        const honeypot = form.querySelector('input[name="url"]')?.value || '';
-  
+
         const payload = {
-          name, email, message, consent,
+          name, email, message, consent, honeypot,
           path: location.pathname,
           ref: document.referrer || null,
-          ua: navigator.userAgent,
-          honeypot
+          ua: navigator.userAgent
         };
-  
+
         try {
           const res = await fetch(`${API_BASE}/api/contact`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-            // skicka cookies? ej nödvändigt här: credentials: 'include'
+            body: JSON.stringify(payload)
           });
-  
+
           if (res.ok) {
             show(successEl);
             form.reset();
           } else {
             show(errorEl);
           }
-        } catch (_err) {
+        } catch {
           show(errorEl);
         } finally {
           enable(submitBtn);
         }
       });
     })();
-  </script>  
+  </script>
 </body>
 </html>
