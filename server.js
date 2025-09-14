@@ -36,6 +36,7 @@ const ALLOWED_ORIGINS = new Set([
   'http://localhost:5500',
   'https://oversvamningsskydd-kund1.onrender.com',
   'https://vattentrygg.se',
+  'https://www.vattentrygg.se', 
 ]);
 
 const corsOptions = {
