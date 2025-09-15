@@ -253,8 +253,8 @@
           <h1 class="heading_h1">Kontakta vårt team för översvämningsskydd</h1>
           <p class="subheading">Kontakta oss för expertråd om hur du skyddar din fastighet eller verksamhet mot översvämningar. Vårt team står redo att svara på dina frågor och erbjuda skräddarsydda lösningar.</p>
           <div class="button-group">
-            <a href="#" class="button w-button">Emaila oss</a>
-            <a href="#" class="button is-secondary w-button">Ring nu</a>
+            <a href="mailto:support@vattentrygg.se" class="button w-button">Emaila oss</a>
+            <a href="tel:+46702775799" class="button is-secondary w-button">Ring nu</a>            
           </div>
         </div>
       </div>
@@ -272,15 +272,17 @@
                   <path d="M5.25 6.75H18.75V17.25H5.25V6.75Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path>
                   <path d="M5.25 6.75L12 12L18.75 6.75" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path>
                 </svg></div>
-              <a href="#" class="text-link w-inline-block">
-                <div class="text-link is-secondary">support@vattentrygg.se</div>
-              </a>
+                <a href="mailto:support@vattentrygg.se" class="text-link w-inline-block">
+                  <div class="text-link is-secondary">support@vattentrygg.se</div>
+                </a>
             </li>
             <li class="flex_horizontal gap-xxsmall margin-bottom_none">
               <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 0 24 24" fill="none">
                   <path d="M12.5 18.25C16.2279 18.25 19.25 15.2279 19.25 11.5C19.25 7.77208 16.2279 4.75 12.5 4.75C8.77208 4.75 5.75 7.77208 5.75 11.5C5.75 12.6007 6.01345 13.6398 6.48072 14.5578L5 19L9.71819 17.6519C10.5664 18.0361 11.5082 18.25 12.5 18.25Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path>
                 </svg></div>
-              <div class="text-block-9">+46 70 27 757 99</div>
+              <a href="tel:+46702775799" class="text-link w-inline-block">
+                <div class="text-link is-secondary">+46 70 27 757 99</div>
+              </a>
             </li>
             <li class="flex_horizontal gap-xxsmall margin-bottom_none">
               <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 0 24 24" fill="none">
@@ -292,10 +294,23 @@
           </ul>
         </div>
         <div class="w-form">
-           <form method="post"data-wf-element-id="b89ec4eb-51ac-494c-b5fd-ab1b75b55453" name="wf-form-Contact-Form" data-name="Contact Form" id="wf-form-contact-form" data-wf-page-id="68b808ead53ada753d9d03d1">
-            <div class="input"><label for="name-4" class="input_label">För-efternamn</label><input class="input_field w-input" maxlength="256" name="name-4" data-name="Name 4" placeholder="Ditt namn" type="text" id="name-4"></div>
-            <div class="input"><label for="email-7" class="input_label">Email address</label><input class="input_field w-input" maxlength="256" name="email-7" data-name="Email 7" placeholder="email@website.com" type="email" id="email-7" required=""></div>
-            <div class="input"><label for="message-8" class="input_label">Ditt meddelande</label><textarea id="message-8" name="message-8" maxlength="5000" data-name="Message 8" placeholder="Skriv ditt meddelande..." class="input_field input_text-area w-input"></textarea></div>
+          <form method="post" data-wf-element-id="b89ec4eb-51ac-494c-b5fd-ab1b75b55453" name="wf-form-Contact-Form" data-name="Contact Form" id="wf-form-contact-form" data-wf-page-id="68b808ead53ada753d9d03d1">
+            <div class="input">
+              <label for="name-4" class="input_label">För-efternamn</label>
+              <input class="input_field w-input" maxlength="256" name="name-4" data-name="Name 4" placeholder="Ditt namn" type="text" id="name-4" required>
+            </div>
+            
+            <div class="input">
+              <label for="email-7" class="input_label">Email address</label>
+              <input class="input_field w-input" maxlength="256" name="email-7" data-name="Email 7" placeholder="din@e.com" type="email" id="email-7" required>
+            </div>
+            
+            <div class="input">
+              <label for="message-8" class="input_label">Ditt meddelande</label>
+              <textarea id="message-8" name="message-8" maxlength="5000" data-name="Message 8" placeholder="Skriv ditt meddelande..." class="input_field input_text-area w-input" required></textarea>
+            </div>
+            
+
             <label class="w-checkbox checkbox margin-bottom_none" style="display:flex;align-items:center;gap:.5rem">
               <input type="checkbox" id="agreement-checkbox-4" required class="w-checkbox-input">
               <span class="checkbox_label">
@@ -456,7 +471,9 @@
   <script>
     (function () {
       // 👉 Kör via samma domän (proxyad backend): lämna tomt för relativ väg.
-      const API_BASE = 'https://aurora-backend-kund-oversvamningsskydd.onrender.com';
+      const API_BASE_PORTAL = 'https://source-database.onrender.com'; // kundportalen
+const API_BASE_AURORA = 'https://aurora-backend-kund-oversvamningsskydd.onrender.com'; // (valfritt) behåll gamla
+
 
       const form = document.getElementById('wf-form-contact-form');
       if (!form) return;
@@ -488,30 +505,67 @@
         }
 
         const payload = {
-          name, email, message, consent, honeypot,
-          path: location.pathname,
-          ref: document.referrer || null,
-          ua: navigator.userAgent
-        };
+  name,
+  email,
+  message,
+  consent,
+  company: honeypot,         // ✅ skicka honeypot som "company"
+  path: location.pathname,
+  ref: document.referrer || null,
+  ua: navigator.userAgent
+};
 
-        try {
-          const res = await fetch(`${API_BASE}/api/contact`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
 
-          if (res.ok) {
-            show(successEl);
-            form.reset();
-          } else {
-            show(errorEl);
-          }
-        } catch {
-          show(errorEl);
-        } finally {
-          enable(submitBtn);
-        }
+try {
+  // 1) Förbered portal-payload enligt kundportalens modell
+  //    Justera nycklarna här om ert /api/messages kräver annan struktur.
+  const portalPayload = {
+    name,
+    email,
+    message,
+    consent,
+    company: honeypot,            // honeypot
+    source: 'website',            // var meddelandet kommer ifrån
+    path: location.pathname,
+    ref: document.referrer || null,
+    ua: navigator.userAgent,
+    createdAt: new Date().toISOString()
+  };
+
+  // 2) Skicka till kundportalen (kunder.html kan lista dessa)
+  const portalRes = await fetch(`${API_BASE_PORTAL}/api/messages`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify(portalPayload),
+    credentials: 'omit',
+    cache: 'no-store'
+  });
+
+  // (VALFRITT) 3) Skicka även till ditt nuvarande backend för e-post/notifiering/logg
+  const auroraRes = await fetch(`${API_BASE_AURORA}/api/contact`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify(payload),
+    credentials: 'omit',
+    cache: 'no-store'
+  }).catch(() => null);
+
+  // 4) Kontrollera svar
+  const okPortal = portalRes.ok;
+  const okAurora = auroraRes ? auroraRes.ok : true; // om auroraRes saknas, räkna som OK
+
+  if (okPortal && okAurora) {
+    show(successEl);
+    form.reset();
+  } else {
+    show(errorEl);
+  }
+} catch (err) {
+  console.error('Contact error:', err);
+  show(errorEl);
+} finally {
+  enable(submitBtn);
+}
       });
     })();
   </script>
