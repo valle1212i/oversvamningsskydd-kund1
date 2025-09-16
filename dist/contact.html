@@ -470,102 +470,91 @@
   <script src="js/aurora.js"></script>
   <script>
     (function () {
+      // ✅ Bind bara EN gång även om skriptet råkar köras två gånger
+      if (window.__vtgContactBound) return;
+      window.__vtgContactBound = true;
+  
       const API_BASE_PORTAL = 'https://source-database.onrender.com';
-      // (valfritt) gamla backend: lämna som '' för att hoppa över
-      const API_BASE_AURORA = ''; // 'https://aurora-backend-kund-oversvamningsskydd.onrender.com';
-    
-      // härled tenant från hostname (t.ex. vattentrygg.se -> 'vattentrygg')
+      const API_BASE_AURORA = ''; // lämna tom för att hoppa över
+  
       const hostname = location.hostname.toLowerCase();
       const tenant = hostname.replace(/^www\./, '').split('.')[0] || 'vattentrygg';
-    
+  
       const form = document.getElementById('wf-form-contact-form');
       if (!form) return;
-    
+  
       const successEl = form.parentElement.querySelector('.w-form-done');
       const errorEl   = form.parentElement.querySelector('.w-form-fail');
       const submitBtn = form.querySelector('input[type="submit"]');
-    
+  
+      // säkerställ default dolda
+      if (successEl) successEl.style.display = 'none';
+      if (errorEl)   errorEl.style.display   = 'none';
+  
       function show(el){ if (el) el.style.display = 'block'; }
       function hide(el){ if (el) el.style.display = 'none'; }
-      function disable(b){ if (b) { b.disabled = true; b.value = 'Skickar...'; } }
+      function disable(b){ if (b) { b.disabled = true;  b.value = 'Skickar...'; } }
       function enable(b){ if (b) { b.disabled = false; b.value = 'Skicka'; } }
-    
+  
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         hide(successEl); hide(errorEl);
         disable(submitBtn);
-    
+  
         const name    = document.getElementById('name-4')?.value?.trim() || '';
         const email   = document.getElementById('email-7')?.value?.trim() || '';
         const message = document.getElementById('message-8')?.value?.trim() || '';
         const consent = document.getElementById('agreement-checkbox-4')?.checked || false;
         const honeypot = form.querySelector('input[name="company"]')?.value?.trim() || '';
-    
+  
         if (!name || !email || !message || !consent) {
-          show(errorEl); enable(submitBtn); return;
+          hide(successEl); show(errorEl); enable(submitBtn); return;
         }
-    
-        // payload till kundportalen
+  
         const portalPayload = {
-          name,
-          email,
-          message,
-          subject: 'Kontaktformulär',   // default-ämne
+          name, email, message,
+          subject: 'Kontaktformulär',
           consent,
-          company: honeypot,            // honeypot
+          company: honeypot,
           path: location.pathname,
           ref: document.referrer || null,
           ua: navigator.userAgent,
           createdAt: new Date().toISOString()
         };
-    
+  
         try {
-          // 1) S kicka till kundportalen (VIKTIGT: X-Tenant!)
           const portalRes = await fetch(`${API_BASE_PORTAL}/api/messages`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'X-Tenant': tenant   // ⬅️ läggs här
-  },
-  body: JSON.stringify(portalPayload),
-  credentials: 'omit',
-  cache: 'no-store',
-  mode: 'cors'
-});
-
-    
-          // 2) (valfritt) skicka även till gamla backend för e-post/notifiering
-          let okAurora = true;
-          if (API_BASE_AURORA) {
-            const auroraRes = await fetch(`${API_BASE_AURORA}/api/contact`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-              body: JSON.stringify({
-                name, email, message, consent, company: honeypot,
-                path: location.pathname, ref: document.referrer || null, ua: navigator.userAgent
-              }),
-              credentials: 'omit',
-              cache: 'no-store',
-              mode: 'cors'
-            }).catch(() => null);
-            okAurora = !!(auroraRes && auroraRes.ok);
-          }
-    
-          if (portalRes.ok && okAurora) {
-            show(successEl);
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'X-Tenant': tenant
+            },
+            body: JSON.stringify(portalPayload),
+            credentials: 'omit',
+            cache: 'no-store',
+            mode: 'cors'
+          });
+  
+          // (Aurora av – API_BASE_AURORA = '')
+  
+          if (portalRes.ok) {
+            hide(errorEl); show(successEl);
             form.reset();
+            enable(submitBtn);
+            return; // ✅ viktigt: avbryt här så inget annat hinner visa "error"
           } else {
-            show(errorEl);
+            hide(successEl); show(errorEl);
           }
         } catch (err) {
           console.error('Contact error:', err);
-          show(errorEl);
+          hide(successEl); show(errorEl);
         } finally {
           enable(submitBtn);
         }
-      });
+      }, { passive:false });
     })();
-    </script>    
+  </script>
+     
 </body>
 </html>
