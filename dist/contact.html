@@ -522,17 +522,18 @@
         try {
           // 1) S kicka till kundportalen (VIKTIGT: X-Tenant!)
           const portalRes = await fetch(`${API_BASE_PORTAL}/api/messages`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'X-Tenant': tenant
-            },
-            body: JSON.stringify(portalPayload),
-            credentials: 'omit',
-            cache: 'no-store',
-            mode: 'cors'
-          });
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'X-Tenant': tenant   // ⬅️ läggs här
+  },
+  body: JSON.stringify(portalPayload),
+  credentials: 'omit',
+  cache: 'no-store',
+  mode: 'cors'
+});
+
     
           // 2) (valfritt) skicka även till gamla backend för e-post/notifiering
           let okAurora = true;
