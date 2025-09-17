@@ -7145,5 +7145,9 @@
   border-radius: 8px;
   border: 1px solid rgba(0,0,0,.1);
 }
+.text-force-black,
+.text-force-black * {
+  color: #000 !important;
+}
 
 
