@@ -297,7 +297,7 @@ app.post('/api/contact', async (req, res) => {
 // ----------------------------------------------------
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 app.get('/', (_req, res) =>
-  res.status(200).send('Aurora backend up. Use POST /api/aurora/ask')
+  res.sendFile(join(__dirname, 'dist', 'index.html'))
 );
 
 // ----------------------------------------------------
