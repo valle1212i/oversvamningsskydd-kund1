@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html data-wf-page="68b985864f473cf59523f304" data-wf-site="68b5e4fe195b2b7b75214b94">
+<head>
+  <meta charset="utf-8">
+  <title>Självaktiverande barriär</title>
+  <meta content="Självaktiverande barriär" property="og:title">
+  <meta content="Självaktiverande barriär" property="twitter:title">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <meta content="Webflow" name="generator">
+  <link href="css/normalize.css" rel="stylesheet" type="text/css">
+  <link href="css/webflow.css" rel="stylesheet" type="text/css">
+  <link href="css/oversvamningsskydd.webflow.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
+  <script type="text/javascript">WebFont.load({  google: {    families: ["Varela:400","Vollkorn:400,400italic,700,700italic","Work Sans:regular"]  }});</script>
+  <script type="text/javascript">!function(o,c){var n=c.documentElement,t=" w-mod-";n.className+=t+"js",("ontouchstart"in o||o.DocumentTouch&&c instanceof DocumentTouch)&&(n.className+=t+"touch")}(window,document);</script>
+  <link rel="icon" type="image/png" href="images/vattentrygglogo.png">
+  <link rel="apple-touch-icon" href="images/vattentrygglogo.png">  
+</head>
+<body class="body">
+  <div class="nav">
+    <div data-duration="400" data-animation="default" data-easing2="ease" data-easing="ease" data-collapse="medium" role="banner" data-no-scroll="1" class="nav_container w-nav">
+      <div class="nav_left">
+        <a href="#" class="nav_logo w-inline-block">
+          <div class="nav_logo-icon"><svg width="100%" height="100%" viewbox="0 0 33 33" preserveaspectratio="xMidYMid meet">
+              <path d="M28,0H5C2.24,0,0,2.24,0,5v23c0,2.76,2.24,5,5,5h23c2.76,0,5-2.24,5-5V5c0-2.76-2.24-5-5-5ZM29,17c-6.63,0-12,5.37-12,12h-1c0-6.63-5.37-12-12-12v-1c6.63,0,12-5.37,12-12h1c0,6.63,5.37,12,12,12v1Z" fill="currentColor" class="path"></path>
+            </svg></div>
+          <div data-brand-name="true" class="paragraph_large margin-bottom_none">Vattentrygg</div>
+        </a>
+      </div>
+      <div class="nav_right">
+        <nav role="navigation" class="nav_menu w-nav-menu">
+          <ul role="list" class="nav_menu-list w-list-unstyled">
+            <li class="nav_menu-list-item">
+              <div data-delay="0" data-hover="false" data-w-id="7ff759e3-e58d-d5ca-8bf9-bb5e477d3677" class="nav_dropdown-menu w-dropdown">
+                <div class="nav_link w-dropdown-toggle">
+                  <div>Våra lösningar</div>
+                  <div class="nav-caret w-icon-dropdown-toggle"></div>
+                </div>
+                <nav class="mega-nav_dropdown-list w-dropdown-list">
+                  <div class="mega-nav_dropdown-list-wrapper">
+                    <ul role="list" class="grid_3-col tablet-1-col gap-medium margin-bottom_none w-list-unstyled">
+                      <li id="w-node-_016f5a0a-5b63-edde-82c5-e2b2ad6d2e6d-ad6d2e56" class="w-node-_4dc057c8-52c7-977f-ae4e-4bae8cb54b1d-8cb54b1b">
+                        <div class="w-layout-grid grid_3-col tablet-1-col gap-small">
+                          <div>
+                            <div class="eyebrow">Barriär Dörrar</div>
+                            <ul role="list" class="mega-nav_list w-list-unstyled">
+                              <li class="margin-bottom_none">
+                                <a href="/products-2.html#barriardorrar" class="mega-nav_link-item w-inline-block">
+                                  <div class="icon is-medium"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 0 32 32" fill="currentColor">
+                                      <path d="m25.7 9.3l-7-7A.9.9 0 0 0 18 2H8a2.006 2.006 0 0 0-2 2v24a2.006 2.006 0 0 0 2 2h16a2.006 2.006 0 0 0 2-2V10a.9.9 0 0 0-.3-.7M18 4.4l5.6 5.6H18ZM24 28H8V4h8v6a2.006 2.006 0 0 0 2 2h6Z" stroke-linejoin="round"></path>
+                                    </svg></div>
+                                  <div id="w-node-_016f5a0a-5b63-edde-82c5-e2b2ad6d2e78-ad6d2e56" class="w-node-_4dc057c8-52c7-977f-ae4e-4bae8cb54b28-8cb54b1b">
+                                    <div><strong>Översvämningsgrindar</strong></div>
+                                    <div class="paragraph_small text-color_secondary">Skyddar entréer och passager med metallgrindar (gångjärn, glas eller SAB</div>
+                                  </div>
+                                </a>
+                              </li>
+                              <li class="margin-bottom_none">
+                                <a href="#" class="mega-nav_link-item w-inline-block">
+                                  <div class="icon is-medium"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 0 32 32" fill="currentColor">
+                                      <path d="m25.7 9.3l-7-7A.9.9 0 0 0 18 2H8a2.006 2.006 0 0 0-2 2v24a2.006 2.006 0 0 0 2 2h16a2.006 2.006 0 0 0 2-2V10a.9.9 0 0 0-.3-.7M18 4.4l5.6 5.6H18ZM24 28H8V4h8v6a2.006 2.006 0 0 0 2 2h6Z" stroke-linejoin="round"></path>
+                                    </svg></div>
+                                  <div id="w-node-f807f6d1-1643-a581-cf58-1ddfb132bd6d-ad6d2e56" class="w-node-_4dc057c8-52c7-977f-ae4e-4bae8cb54b33-8cb54b1b">
+                                    <div><strong>Träbarriärer</strong></div>
+                                    <div class="paragraph_small text-color_secondary">Natruliga och robusta träkonstruktioner för att stoppa vattenflöden</div>
+                                  </div>
+                                </a>
+                              </li>
+                              <li class="margin-bottom_none">
+                                <a href="/products-2.html#barriardorrar" class="mega-nav_link-item w-inline-block">
+                                  <div class="icon is-medium"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 0 32 32" fill="currentColor">
+                                      <path d="m25.7 9.3l-7-7A.9.9 0 0 0 18 2H8a2.006 2.006 0 0 0-2 2v24a2.006 2.006 0 0 0 2 2h16a2.006 2.006 0 0 0 2-2V10a.9.9 0 0 0-.3-.7M18 4.4l5.6 5.6H18ZM24 28H8V4h8v6a2.006 2.006 0 0 0 2 2h6Z" stroke-linejoin="round"></path>
+                                    </svg></div>
+                                  <div id="w-node-_81a98210-c6c4-fcf3-e0c3-108b18c0cc9b-ad6d2e56" class="w-node-_4dc057c8-52c7-977f-ae4e-4bae8cb54b3e-8cb54b1b">
+                                    <div><strong>Skyddsbarriärer mot översvämning</strong></div>
+                                    <div class="paragraph_small text-color_secondary">Permanenta lösningar som ger långvarigt skydd mot högt vatten</div>
+                                  </div>
+                                </a>
+                              </li>
+                            </ul>
+                          </div>
+                          <div>
+                            <div class="eyebrow">Komposit dörrar</div>
+                            <ul role="list" class="mega-nav_list w-list-unstyled">
+                              <li class="margin-bottom_none">
+                                <a href="/products#kompositdorrar" target="_blank" class="mega-nav_link-item w-inline-block">
+                                  <div class="icon is-medium"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 0 32 32" fill="currentColor">
+                                      <path d="m25.7 9.3l-7-7A.9.9 0 0 0 18 2H8a2.006 2.006 0 0 0-2 2v24a2.006 2.006 0 0 0 2 2h16a2.006 2.006 0 0 0 2-2V10a.9.9 0 0 0-.3-.7M18 4.4l5.6 5.6H18ZM24 28H8V4h8v6a2.006 2.006 0 0 0 2 2h6Z" stroke-linejoin="round"></path>
+                                    </svg></div>
+                                  <div id="w-node-_9f30640f-1f64-d0c6-60e9-e2b460cf1f47-ad6d2e56" class="w-node-_4dc057c8-52c7-977f-ae4e-4bae8cb54b4d-8cb54b1b">
+                                    <div><strong>UPVC - Dörrar</strong></div>
+                                    <div class="paragraph_small text-color_secondary">Hållbara dörrar med inbyggt översvämningsskydd</div>
+                                  </div>
+                                </a>
+                              </li>
+                              <li class="margin-bottom_none">
+                                <a href="/products#kompositdorrar" target="_blank" class="mega-nav_link-item w-inline-block">
+                                  <div class="icon is-medium"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 0 32 32" fill="currentColor">
+                                      <path d="m25.7 9.3l-7-7A.9.9 0 0 0 18 2H8a2.006 2.006 0 0 0-2 2v24a2.006 2.006 0 0 0 2 2h16a2.006 2.006 0 0 0 2-2V10a.9.9 0 0 0-.3-.7M18 4.4l5.6 5.6H18ZM24 28H8V4h8v6a2.006 2.006 0 0 0 2 2h6Z" stroke-linejoin="round"></path>
+                                    </svg></div>
+                                  <div id="w-node-_9f30640f-1f64-d0c6-60e9-e2b460cf1f52-ad6d2e56" class="w-node-_4dc057c8-52c7-977f-ae4e-4bae8cb54b58-8cb54b1b">
+                                    <div><strong>Designserien</strong></div>
+                                    <div class="paragraph_small text-color_secondary">Eleganta modeller som Sandman, Weatherly, Nikita, Sappho och Woodstock</div>
+                                  </div>
+                                </a>
+                              </li>
+                              <li class="margin-bottom_none">
+                                <a href="/products#kompositdorrar" target="_blank" class="mega-nav_link-item w-inline-block">
+                                  <div class="icon is-medium"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 0 32 32" fill="currentColor">
+                                      <path d="m25.7 9.3l-7-7A.9.9 0 0 0 18 2H8a2.006 2.006 0 0 0-2 2v24a2.006 2.006 0 0 0 2 2h16a2.006 2.006 0 0 0 2-2V10a.9.9 0 0 0-.3-.7M18 4.4l5.6 5.6H18ZM24 28H8V4h8v6a2.006 2.006 0 0 0 2 2h6Z" stroke-linejoin="round"></path>
+                                    </svg></div>
+                                  <div id="w-node-_9f30640f-1f64-d0c6-60e9-e2b460cf1f5d-ad6d2e56" class="w-node-_4dc057c8-52c7-977f-ae4e-4bae8cb54b63-8cb54b1b">
+                                    <div><strong>Vattentrygg Premium</strong></div>
+                                    <div class="paragraph_small text-color_secondary">Exklusiva dörrar som kombinerar design och maximal säkerhet</div>
+                                  </div>
+                                </a>
+                              </li>
+                            </ul>
+                          </div>
+                          <div>
+                            <div class="eyebrow">Tillbehör och ventiler</div>
+                            <ul role="list" class="mega-nav_list w-list-unstyled">
+                              <li class="margin-bottom_none">
+                                <a href="/products#tillbehor-ventiler" target="_blank" class="mega-nav_link-item w-inline-block">
+                                  <div class="icon is-medium"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 0 32 32" fill="currentColor">
+                                      <path d="m25.7 9.3l-7-7A.9.9 0 0 0 18 2H8a2.006 2.006 0 0 0-2 2v24a2.006 2.006 0 0 0 2 2h16a2.006 2.006 0 0 0 2-2V10a.9.9 0 0 0-.3-.7M18 4.4l5.6 5.6H18ZM24 28H8V4h8v6a2.006 2.006 0 0 0 2 2h6Z" stroke-linejoin="round"></path>
+                                    </svg></div>
+                                  <div id="w-node-_246168ec-5422-2d22-c1a6-e8b7eb4d77d8-ad6d2e56" class="w-node-_4dc057c8-52c7-977f-ae4e-4bae8cb54b72-8cb54b1b">
+                                    <div><strong>Vattenpumpar</strong></div>
+                                    <div class="paragraph_small text-color_secondary">Effektiva pumpar för att snabbt avlägsna inträngande vatten</div>
+                                  </div>
+                                </a>
+                              </li>
+                              <li class="margin-bottom_none">
+                                <a href="/products#tillbehor-ventiler" target="_blank" class="mega-nav_link-item w-inline-block">
+                                  <div class="icon is-medium"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 0 32 32" fill="currentColor">
+                                      <path d="m25.7 9.3l-7-7A.9.9 0 0 0 18 2H8a2.006 2.006 0 0 0-2 2v24a2.006 2.006 0 0 0 2 2h16a2.006 2.006 0 0 0 2-2V10a.9.9 0 0 0-.3-.7M18 4.4l5.6 5.6H18ZM24 28H8V4h8v6a2.006 2.006 0 0 0 2 2h6Z" stroke-linejoin="round"></path>
+                                    </svg></div>
+                                  <div id="w-node-_246168ec-5422-2d22-c1a6-e8b7eb4d77e3-ad6d2e56" class="w-node-_4dc057c8-52c7-977f-ae4e-4bae8cb54b7d-8cb54b1b">
+                                    <div><strong>Backventiler &amp; backvattenventiler</strong></div>
+                                    <div class="paragraph_small text-color_secondary">Hindrar avloppsvatten från att tränga tillbaka in i byggnaden</div>
+                                  </div>
+                                </a>
+                              </li>
+                              <li class="margin-bottom_none">
+                                <a href="/products#tillbehor-ventiler" target="_blank" class="mega-nav_link-item w-inline-block">
+                                  <div class="icon is-medium"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 0 32 32" fill="currentColor">
+                                      <path d="m25.7 9.3l-7-7A.9.9 0 0 0 18 2H8a2.006 2.006 0 0 0-2 2v24a2.006 2.006 0 0 0 2 2h16a2.006 2.006 0 0 0 2-2V10a.9.9 0 0 0-.3-.7M18 4.4l5.6 5.6H18ZM24 28H8V4h8v6a2.006 2.006 0 0 0 2 2h6Z" stroke-linejoin="round"></path>
+                                    </svg></div>
+                                  <div id="w-node-_246168ec-5422-2d22-c1a6-e8b7eb4d77ee-ad6d2e56" class="w-node-_4dc057c8-52c7-977f-ae4e-4bae8cb54b88-8cb54b1b">
+                                    <div><strong>Bung till toalett</strong></div>
+                                    <div class="paragraph_small text-color_secondary">Enkla tillbehör för att blockera vatten i toaletter och ventilationsluckor</div>
+                                  </div>
+                                </a>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </li>
+                      <li id="w-node-_016f5a0a-5b63-edde-82c5-e2b2ad6d2ede-ad6d2e56" class="flex_horizontal w-node-_4dc057c8-52c7-977f-ae4e-4bae8cb54b8e-8cb54b1b">
+                        <a href="#" class="card-link is-inverse flex-child_expand w-inline-block">
+                          <div class="card_body">
+                            <div class="heading_h3">Försvara dig mot vattenskador</div>
+                            <p class="paragraph_small text-color_inverse-secondary">Undvik kostsamma reparationer - skydda värdet</p>
+                            <div class="margin_top-auto">
+                              <div class="button-group">
+                                <div class="text-button is-secondary">
+                                  <div>Kontakta oss</div>
+                                  <div class="button_icon"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 0 16 16" fill="none">
+                                      <path d="M2 8H14.5M14.5 8L8.5 2M14.5 8L8.5 14" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
+                                    </svg></div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                  <a href="#" class="link">Se alla våra produkter</a>
+                </nav>
+              </div>
+            </li>
+            <li class="nav_menu-list-item">
+              <a href="team.html" class="nav_link w-inline-block">
+                <div>Träffa oss</div>
+              </a>
+            </li>
+            <li class="nav_menu-list-item">
+              <a href="about.html" class="nav_link w-inline-block">
+                <div>Köpvilkor</div>
+              </a>
+            </li>
+            <li class="nav_menu-list-item">
+              <div data-delay="0" data-hover="false" data-w-id="7ff759e3-e58d-d5ca-8bf9-bb5e477d3708" class="nav_dropdown-menu w-dropdown">
+                <div class="nav_link w-dropdown-toggle">
+                  <div>Support</div>
+                  <div class="nav-caret w-icon-dropdown-toggle"></div>
+                </div>
+                <div class="nav_dropdown-list w-dropdown-list">
+                  <div class="nav-menu_dropdown-list-wrapper">
+                    <ul role="list" class="flex_vertical margin-bottom_none w-list-unstyled">
+                      <li class="margin-bottom_none">
+                        <a href="#" class="nav_dropdown-link w-inline-block">
+                          <div class="button_label">Help Center</div>
+                        </a>
+                      </li>
+                      <li class="margin-bottom_none">
+                        <a href="#" class="nav_dropdown-link w-inline-block">
+                          <div class="button_label">Contact Us</div>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </nav>
+        <div class="button-group margin-top_none">
+          <a href="contact.html" class="button w-inline-block">
+            <div class="button_label">Få en offert</div>
+          </a>
+        </div>
+      </div>
+      <div class="nav_mobile-menu-button w-nav-button">
+        <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24">
+            <g class="nc-icon-wrapper" stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.5" fill="none" stroke="currentColor" stroke-miterlimit="10">
+              <line x1="1" y1="12" x2="23" y2="12" stroke="currentColor"></line>
+              <line x1="1" y1="5" x2="23" y2="5"></line>
+              <line x1="1" y1="19" x2="23" y2="19"></line>
+            </g>
+          </svg></div>
+      </div>
+    </div>
+  </div>
+  <h2 class="heading_h2-copy">SJÄLVAKTIVERANDE BARRIÄR (SAB)</h2>
+  <div class="div-block"><img src="images/ChatGPT-Image-3-sep.-2025-09_17_09.png" loading="lazy" width="609" sizes="(max-width: 767px) 100vw, 608.9931030273438px" alt="" srcset="images/ChatGPT-Image-3-sep.-2025-09_17_09-p-500.png 500w, images/ChatGPT-Image-3-sep.-2025-09_17_09-p-800.png 800w, images/ChatGPT-Image-3-sep.-2025-09_17_09-p-1080.png 1080w, images/ChatGPT-Image-3-sep.-2025-09_17_09.png 1536w">
+    <h1 class="heading-2">         <strong>Den självaktiverande barriären (SAB) är en innovativ lösning som använder det stigande översvämningsvattnet för att aktivera sitt skydd – helt utan el eller manuell insats. Med lång livslängd, minimalt underhåll och diskret design ger den ett pålitligt översvämningsskydd för både bostäder och kommersiella fastigheter<br>‍<br>→ Självaktiverande barriär – drivs av stigande vatten<br>→ Ingen el, inga människor, inga mekaniska ingrepp<br>→ Minimalt underhåll – livslängd över 50 år<br>→ Fullständigt skydd för bostäder och kommersiella områden<br>→ Klarar extremt höga vattennivåer upp till 3,5 m<br>→ Skräddarsydda storlekar från 1 m till över 1 000 m<br>→ Osynlig i viloläge – bevarar utsikt och trafikflöde<br>→ Kan kopplas till telemetri för fjärrövervakning→ Passiv, långsiktig och kostnadseffektiv lösning</strong><br><br><br><br>‍</h1>
+  </div>
+  <div class="button-group is-vertical-stretch">
+    <a href="contact.html" class="button on-inverse w-inline-block">
+      <div>Pris på förfrågan</div>
+    </a>
+  </div>
+  <div style="padding-top:56.17021276595745%" class="w-embed-youtubevideo"><iframe src="https://www.youtube.com/embed/FHb-4Q8Wsb4?rel=0&amp;controls=1&amp;autoplay=0&amp;mute=0&amp;start=0" frameborder="0" style="position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:auto" allow="autoplay; encrypted-media" allowfullscreen="" title="M3 Floodtec Self Activating Barrier"></iframe></div>
+  <footer class="footer">
+    <div class="container">
+      <div class="w-layout-grid grid_2-col margin-bottom_large">
+        <ul role="list" class="margin-bottom_none w-list-unstyled">
+          <li>
+            <a href="team.html" class="footer_link w-inline-block">
+              <div class="paragraph_xxlarge">Vårt team</div>
+            </a>
+          </li>
+          <li>
+            <a href="products-2.html" class="footer_link w-inline-block">
+              <div class="paragraph_xxlarge">Våra lösningar</div>
+            </a>
+          </li>
+          <li>
+            <a href="about.html" class="footer_link w-inline-block">
+              <div class="paragraph_xxlarge">Köpvilkor</div>
+            </a>
+          </li>
+          <li>
+            <a href="contact.html" class="footer_link w-inline-block">
+              <div class="paragraph_xxlarge">Support</div>
+            </a>
+          </li>
+          <li>
+            <a href="contact.html" class="footer_link w-inline-block">
+              <div class="paragraph_xxlarge">Kontakta oss</div>
+            </a>
+          </li>
+        </ul>
+        <a id="w-node-_447b0386-1e02-51a7-4a70-8e69830f82ee-89bb09b6" href="#" class="logo w-node-d9945a16-fcb3-0541-a3f0-b6c3baeb821d-baeb8205 w-inline-block">
+          <div class="nav_logo-icon"><svg width="100%" height="100%" viewbox="0 0 33 33" preserveaspectratio="xMidYMid meet">
+              <path d="M28,0H5C2.24,0,0,2.24,0,5v23c0,2.76,2.24,5,5,5h23c2.76,0,5-2.24,5-5V5c0-2.76-2.24-5-5-5ZM29,17c-6.63,0-12,5.37-12,12h-1c0-6.63-5.37-12-12-12v-1c6.63,0,12-5.37,12-12h1c0,6.63,5.37,12,12,12v1Z" fill="currentColor"></path>
+            </svg></div>
+          <div data-brand-name="true" class="paragraph_xlarge margin-bottom_none text_all-caps">Vattentrygg</div>
+        </a>
+      </div>
+      <div class="w-layout-grid footer_bottom">
+        <div>
+          <p class="text-color_secondary">Powered by Source</p>
+        </div>
+        <div class="margin-left_auto">
+          <ul role="list" aria-label="Social media links" class="footer_icon-group margin_top-auto w-list-unstyled">
+            <li class="margin-bottom_none">
+              <a href="#" class="footer_icon-link w-inline-block"><svg width="100%" height="100%" viewbox="0 0 16 16">
+                  <path d="M16,8.048a8,8,0,1,0-9.25,7.9V10.36H4.719V8.048H6.75V6.285A2.822,2.822,0,0,1,9.771,3.173a12.2,12.2,0,0,1,1.791.156V5.3H10.554a1.155,1.155,0,0,0-1.3,1.25v1.5h2.219l-.355,2.312H9.25v5.591A8,8,0,0,0,16,8.048Z" fill="currentColor"></path>
+                </svg>
+                <div class="screen-reader">Facebook</div>
+              </a>
+            </li>
+            <li class="margin-bottom_none">
+              <a href="#" class="footer_icon-link w-inline-block"><svg width="100%" height="100%" viewbox="0 0 16 16">
+                  <path d="M8,1.441c2.136,0,2.389.009,3.233.047a4.419,4.419,0,0,1,1.485.276,2.472,2.472,0,0,1,.92.6,2.472,2.472,0,0,1,.6.92,4.419,4.419,0,0,1,.276,1.485c.038.844.047,1.1.047,3.233s-.009,2.389-.047,3.233a4.419,4.419,0,0,1-.276,1.485,2.644,2.644,0,0,1-1.518,1.518,4.419,4.419,0,0,1-1.485.276c-.844.038-1.1.047-3.233.047s-2.389-.009-3.233-.047a4.419,4.419,0,0,1-1.485-.276,2.472,2.472,0,0,1-.92-.6,2.472,2.472,0,0,1-.6-.92,4.419,4.419,0,0,1-.276-1.485c-.038-.844-.047-1.1-.047-3.233s.009-2.389.047-3.233a4.419,4.419,0,0,1,.276-1.485,2.472,2.472,0,0,1,.6-.92,2.472,2.472,0,0,1,.92-.6,4.419,4.419,0,0,1,1.485-.276c.844-.038,1.1-.047,3.233-.047M8,0C5.827,0,5.555.009,4.7.048A5.868,5.868,0,0,0,2.76.42a3.908,3.908,0,0,0-1.417.923A3.908,3.908,0,0,0,.42,2.76,5.868,5.868,0,0,0,.048,4.7C.009,5.555,0,5.827,0,8s.009,2.445.048,3.3A5.868,5.868,0,0,0,.42,13.24a3.908,3.908,0,0,0,.923,1.417,3.908,3.908,0,0,0,1.417.923,5.868,5.868,0,0,0,1.942.372C5.555,15.991,5.827,16,8,16s2.445-.009,3.3-.048a5.868,5.868,0,0,0,1.942-.372,4.094,4.094,0,0,0,2.34-2.34,5.868,5.868,0,0,0,.372-1.942c.039-.853.048-1.125.048-3.3s-.009-2.445-.048-3.3A5.868,5.868,0,0,0,15.58,2.76a3.908,3.908,0,0,0-.923-1.417A3.908,3.908,0,0,0,13.24.42,5.868,5.868,0,0,0,11.3.048C10.445.009,10.173,0,8,0Z" fill="currentColor"></path>
+                  <path d="M8,3.892A4.108,4.108,0,1,0,12.108,8,4.108,4.108,0,0,0,8,3.892Zm0,6.775A2.667,2.667,0,1,1,10.667,8,2.667,2.667,0,0,1,8,10.667Z" fill="currentColor"></path>
+                  <circle cx="12.27" cy="3.73" r="0.96" fill="currentColor"></circle>
+                </svg>
+                <div class="screen-reader">Instagram<br></div>
+              </a>
+            </li>
+            <li class="margin-bottom_none">
+              <a href="#" class="footer_icon-link w-inline-block"><svg width="100%" height="100%" viewbox="0 0 16 16">
+                  <path d="M12.3723 1.16992H14.6895L9.6272 6.95576L15.5825 14.829H10.9196L7.26734 10.0539L3.08837 14.829H0.769833L6.18442 8.64037L0.471436 1.16992H5.2528L8.55409 5.53451L12.3723 1.16992ZM11.5591 13.4421H12.843L4.55514 2.48399H3.17733L11.5591 13.4421Z" fill="currentColor"></path>
+                </svg>
+                <div class="screen-reader">X</div>
+              </a>
+            </li>
+            <li class="margin-bottom_none">
+              <a href="#" class="footer_icon-link w-inline-block"><svg width="100%" height="100%" viewbox="0 0 16 16">
+                  <path d="M15.3,0H0.7C0.3,0,0,0.3,0,0.7v14.7C0,15.7,0.3,16,0.7,16h14.7c0.4,0,0.7-0.3,0.7-0.7V0.7 C16,0.3,15.7,0,15.3,0z M4.7,13.6H2.4V6h2.4V13.6z M3.6,5C2.8,5,2.2,4.3,2.2,3.6c0-0.8,0.6-1.4,1.4-1.4c0.8,0,1.4,0.6,1.4,1.4 C4.9,4.3,4.3,5,3.6,5z M13.6,13.6h-2.4V9.9c0-0.9,0-2-1.2-2c-1.2,0-1.4,1-1.4,2v3.8H6.2V6h2.3v1h0c0.3-0.6,1.1-1.2,2.2-1.2 c2.4,0,2.8,1.6,2.8,3.6V13.6z" fill="currentColor"></path>
+                </svg>
+                <div class="screen-reader">LinkedIn</div>
+              </a>
+            </li>
+            <li class="margin-bottom_none">
+              <a href="#" class="footer_icon-link w-inline-block"><svg width="100%" height="100%" viewbox="0 0 16 16">
+                  <path d="M15.8,4.8c-0.2-1.3-0.8-2.2-2.2-2.4C11.4,2,8,2,8,2S4.6,2,2.4,2.4C1,2.6,0.3,3.5,0.2,4.8C0,6.1,0,8,0,8 s0,1.9,0.2,3.2c0.2,1.3,0.8,2.2,2.2,2.4C4.6,14,8,14,8,14s3.4,0,5.6-0.4c1.4-0.3,2-1.1,2.2-2.4C16,9.9,16,8,16,8S16,6.1,15.8,4.8z M6,11V5l5,3L6,11z" fill="currentColor"></path>
+                </svg>
+                <div class="screen-reader">YouTube</div>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="divider margin-bottom_small margin-top_small"></div>
+      <div class="footer_bottom">
+        <div class="text-color_secondary">All rights reserved © 2025</div>
+        <div class="text-color_secondary">Made by Source</div>
+      </div>
+    </div>
+  </footer>
+  <script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=68b5e4fe195b2b7b75214b94" type="text/javascript" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+  <script src="js/webflow.js" type="text/javascript"></script>
+  <script src="js/aurora.js"></script>
+</body>
+</html>

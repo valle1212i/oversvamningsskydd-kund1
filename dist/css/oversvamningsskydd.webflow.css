@@ -7139,5 +7139,11 @@
     grid-area: span 1 / span 1 / span 1 / span 1;
   }
 }
+.lang-switcher select{
+  height: 40px;        /* matcha knappens höjd */
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,.1);
+}
 
 

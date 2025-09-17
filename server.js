@@ -1,13 +1,12 @@
-// server.js (Aurora – global)
-// ----------------------------------------------------
+// server.js (utdrag) ✅ korrekt ordning
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { OpenAI } from 'openai';
 import fs from 'node:fs/promises';
 import crypto from 'node:crypto';
+import i18nRouter from './server/i18n-router.js';
 
-// Node stdlib (för datafiler)
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -15,30 +14,19 @@ import { dirname, join } from 'node:path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// ----------------------------------------------------
-// Ladda datafiler (produkter + FAQ)
-// ----------------------------------------------------
-const products = JSON.parse(
-  readFileSync(join(__dirname, 'data', 'products.json'), 'utf8')
-);
-const faq = JSON.parse(
-  readFileSync(join(__dirname, 'data', 'faq.json'), 'utf8')
-);
+// ...läs products/faq...
 
-// ----------------------------------------------------
-// App & middleware
-// ----------------------------------------------------
 const app = express();
 app.use(express.json({ limit: '32kb' }));
-app.set('trust proxy', true); // korrekt IP bakom proxy (Render/Heroku)
+app.set('trust proxy', true);
 
+// --- CORS först ---
 const ALLOWED_ORIGINS = new Set([
   'http://localhost:5500',
   'https://oversvamningsskydd-kund1.onrender.com',
   'https://vattentrygg.se',
-  'https://www.vattentrygg.se', 
+  'https://www.vattentrygg.se',
 ]);
-
 const corsOptions = {
   origin(origin, cb) {
     if (!origin || ALLOWED_ORIGINS.has(origin)) return cb(null, true);
@@ -49,9 +37,16 @@ const corsOptions = {
   credentials: false,
   optionsSuccessStatus: 204,
 };
-
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
+
+// --- I18n + statiska filer efter CORS ---
+app.use('/i18n', i18nRouter);                       // GET /i18n/:locale → i18n/strings.xx.json
+app.use(express.static(join(__dirname, 'public'))); // /lang-switcher.js
+app.use(express.static(join(__dirname, 'dist')));   // Webflow-export
+
+// ...OpenAI, dina API-routes etc. följer som du har...
+
 
 // ----------------------------------------------------
 // OpenAI

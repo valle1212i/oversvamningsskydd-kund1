@@ -4,21 +4,32 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "start": "node payments/server.js",
-        "dev": "NODE_ENV=development node payments/server.js"
+      "start": "node payments/server.js",
+      "dev": "NODE_ENV=development node payments/server.js",
+  
+      "start:web": "node server.js",
+      "dev:web": "NODE_ENV=development node server.js",
+  
+      "i18n:annotate": "node ./scripts/annotate-i18n.js",
+      "i18n:extract": "node ./scripts/extract-strings.js",
+      "i18n:translate": "node ./scripts/translate-i18n.js",
+      "i18n:translate:force": "node ./scripts/translate-i18n.js --force",
+      "i18n:build": "npm run i18n:annotate && npm run i18n:extract && npm run i18n:translate"
     },
     "engines": {
-        "node": ">=18"
+      "node": ">=18"
     },
     "dependencies": {
-        "bcrypt": "^6.0.0",
-        "body-parser": "^1.20.3",
-        "cors": "^2.8.5",
-        "dotenv": "^16.4.5",
-        "express": "^4.19.2",
-        "express-rate-limit": "^8.0.1",
-        "mongodb": "^6.19.0",
-        "openai": "^4.57.0",
-        "stripe": "^16.0.0"
+      "bcrypt": "^6.0.0",
+      "body-parser": "^1.20.3",
+      "cors": "^2.8.5",
+      "dotenv": "^16.4.5",
+      "express": "^4.21.2",
+      "express-rate-limit": "^8.0.1",
+      "jsdom": "^27.0.0",
+      "mongodb": "^6.19.0",
+      "openai": "^4.104.0",
+      "stripe": "^16.0.0"
     }
-}
+  }
+  
