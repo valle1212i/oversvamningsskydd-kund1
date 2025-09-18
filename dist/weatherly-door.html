@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <!DOCTYPE html><html data-wf-page="68b99afd9034bebe3acd68bc" data-wf-site="68b5e4fe195b2b7b75214b94"><head>
   <meta charset="utf-8">
   <title data-i18n="page.title.2.weatherly-door">WEATHERLY DOOR</title>
@@ -349,14 +348,18 @@
   <script src="js/aurora.js"></script>
   <script>
     (function(){
-      const API_BASE = 'https://aurora-backend-kund-oversvamningsskydd.onrender.com';
-      // Byt till ditt riktiga Stripe Price-ID för WEATHERLY:
-      const PRICE_ID = 'price_1S3yiaAg8z29IvXWKyUI1Py8';
+      const API_BASE = 'https://stripe-payment-oversvamningsskydd-kund1.onrender.com';
+      const PRICE_ID = 'price_1S3yiaAg8z29IvXWKyUI1Py8'; // Weatherly
     
       // Antal (dropdown)
       const qtyToggle = document.getElementById('weatherly-qty-toggle');
       const qtyList   = document.getElementById('weatherly-qty-list');
       let qty = 1;
+    
+      // Sätt initial label
+      const initLabel = qtyToggle?.querySelector('div:last-child');
+      if (initLabel) initLabel.textContent = 'Antal: ' + qty;
+    
       if (qtyList && qtyToggle) {
         qtyList.querySelectorAll('.w-dropdown-link').forEach(link => {
           link.addEventListener('click', (e) => {
@@ -371,17 +374,43 @@
         });
       }
     
-      // Hjälpare
-      const getV = (id) => (document.getElementById(id)?.value || '').trim();
-      const req  = (v, name) => { if (!v) throw new Error('Fyll i: ' + name); return v; };
-      const num  = (v, name) => {
-        const n = parseInt(v, 10);
-        if (Number.isNaN(n)) throw new Error(name + ' måste vara ett tal');
-        return n;
+      // Hjälpare – alla fält är frivilliga
+      const val = id => (document.getElementById(id)?.value || '').trim();
+      const toInt = s => {
+        const n = parseInt(s, 10);
+        return Number.isNaN(n) ? null : n;
       };
-      function inRange(n, min, max, name){
-        if (n < min || n > max) throw new Error(`${name} måste vara ${min}–${max} mm`);
-        return n;
+    
+      function collectMetadata(){
+        const md = {
+          produkt: 'Weatherly Dörr',
+          serie: 'Designserien',
+          antal: String(qty),
+          referens_url: location.href
+        };
+    
+        // Frivilliga fält (läggs bara till om de finns och har värde)
+        const opt = {
+          glas:             val('weatherly-glas'),
+          farg:             val('weatherly-farg'),
+          oppningsriktning: val('weatherly-opp'),
+          slagriktning:     val('weatherly-slag'),
+          bredd_mm:         val('weatherly-bredd'),
+          hojd_mm:          val('weatherly-hojd')
+        };
+    
+        // Normalisera tal om angivna
+        if (opt.bredd_mm) {
+          const w = toInt(opt.bredd_mm);
+          if (w !== null) opt.bredd_mm = String(w);
+        }
+        if (opt.hojd_mm) {
+          const h = toInt(opt.hojd_mm);
+          if (h !== null) opt.hojd_mm = String(h);
+        }
+    
+        Object.entries(opt).forEach(([k, v]) => { if (v) md[k] = v; });
+        return md;
       }
     
       async function createCheckout(metadata) {
@@ -396,7 +425,7 @@
         const raw = await r.text();
         let data = null; try { data = raw ? JSON.parse(raw) : null; } catch {}
         if (!r.ok) throw new Error((data && data.message) || `HTTP ${r.status}`);
-        if (!data || !data.url) throw new Error('Oväntat svar från servern.');
+        if (!data?.url) throw new Error('Oväntat svar från servern.');
         return data.url;
       }
     
@@ -408,28 +437,7 @@
         try {
           btn.disabled = true;
           statusEl.textContent = 'Skapar betalning…';
-    
-          const glas = req(getV('weatherly-glas'), 'Glas');
-          const farg = req(getV('weatherly-farg'), 'Färg');
-          const opp  = req(getV('weatherly-opp'),  'Öppningsriktning');
-          const slag = req(getV('weatherly-slag'), 'Slagriktning');
-    
-          const bredd = inRange(num(req(getV('weatherly-bredd'), 'Bredd (mm)'), 'Bredd (mm)'), 670, 1050, 'Bredd (mm)');
-          const hojd  = inRange(num(req(getV('weatherly-hojd'),  'Höjd (mm)'),  'Höjd (mm)'), 1750, 2100, 'Höjd (mm)');
-    
-          const url = await createCheckout({
-            produkt: 'Weatherly Dörr',
-            serie: 'Designserien',
-            glas: glas,
-            farg: farg,
-            oppningsriktning: opp,
-            slagriktning: slag,
-            bredd_mm: String(bredd),
-            hojd_mm: String(hojd),
-            antal: String(qty),
-            referens_url: location.href
-          });
-    
+          const url = await createCheckout(collectMetadata());
           window.location.href = url;
         } catch (e) {
           console.error('[Checkout error]', e);
@@ -440,8 +448,8 @@
         }
       });
     })();
-    </script>    
+    </script>
+    
 <script src="lang-switcher.js" defer></script>
-<script src="js/aurora.js"></script>
 </body>
 </html>

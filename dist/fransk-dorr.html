@@ -352,15 +352,14 @@
   <script>
     (function(){
       // Din backend-bas (samma som på de andra produkterna)
-      const API_BASE = 'https://aurora-backend-kund-oversvamningsskydd.onrender.com';
-    
-      // ⭐️ ERSÄTT med korrekt Stripe Price ID för FRANSK DÖRR
+      const API_BASE = 'https://stripe-payment-oversvamningsskydd-kund1.onrender.com';
+      
+      // Stripe Price ID för Fransk dörr (den du redan har skapat i Stripe)
       const PRICE_ID = 'price_1S3yavAg8z29IvXWqiJkG6e9';
       
-    
       const btn = document.getElementById('buy-french-door');
       const statusEl = document.getElementById('pay-status');
-    
+      
       // Antal-dropdown
       const toggle = document.getElementById('qty-toggle');
       const list = document.getElementById('qty-list');
@@ -379,33 +378,14 @@
         });
       }
     
-      // Formfält
-      const form   = document.getElementById('fd-config');
-      const sel    = document.getElementById('fd-glas');
-      const wInput = document.getElementById('fd-width');
-      const hInput = document.getElementById('fd-height');
-    
-      function assertInRange(val, min, max, name){
-        if (Number.isNaN(val)) throw new Error(name + ' saknas');
-        if (val < min || val > max) throw new Error(`${name} måste vara ${min}–${max} mm`);
-      }
-    
+      // Klick på "Köp nu"
       if (btn) {
         btn.addEventListener('click', async () => {
           try {
-            // Validera config
-            const width  = (wInput && wInput.value) ? parseInt(wInput.value, 10) : null;
-const height = (hInput && hInput.value) ? parseInt(hInput.value, 10) : null;
-
-// Validera ENDAST om kund faktiskt angivit mått
-if (width  !== null) assertInRange(width,  1200, 1800, 'Bredd');
-if (height !== null) assertInRange(height, 1750, 2100, 'Höjd');
-
-    
             btn.disabled = true;
             statusEl.textContent = 'Skapar betalning…';
     
-            // Skicka items + metadata till din backend
+            // Skicka items till backend
             const r = await fetch(`${API_BASE}/api/checkout/create-session`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -413,9 +393,6 @@ if (height !== null) assertInRange(height, 1750, 2100, 'Höjd');
                 items: [{ price: PRICE_ID, quantity: qty }],
                 metadata: {
                   produkt: 'Fransk dörr',
-                  glas: glas,
-                  bredd_mm: String(width),
-                  hojd_mm: String(height),
                   antal: String(qty),
                   url: location.href
                 }
@@ -423,7 +400,8 @@ if (height !== null) assertInRange(height, 1750, 2100, 'Höjd');
             });
     
             const raw = await r.text();
-            let data = null; try { data = raw ? JSON.parse(raw) : null; } catch {}
+            let data = null; 
+            try { data = raw ? JSON.parse(raw) : null; } catch {}
             if (!r.ok) throw new Error((data && data.message) || `HTTP ${r.status}`);
     
             if (data && data.url) {
@@ -441,8 +419,8 @@ if (height !== null) assertInRange(height, 1750, 2100, 'Höjd');
         });
       }
     })();
-    </script>    
+    </script>
+    
 <script src="lang-switcher.js" defer></script>
-<script src="js/aurora.js"></script>
 </body>
 </html>

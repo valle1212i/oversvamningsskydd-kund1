@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <!DOCTYPE html><html data-wf-page="68b998644c1383dccc6b4a42" data-wf-site="68b5e4fe195b2b7b75214b94"><head>
   <meta charset="utf-8">
   <title data-i18n="page.title.2.upvc-do-rr">UPVC DÖRR</title>
@@ -350,15 +349,18 @@
   <script src="js/aurora.js"></script>
   <script>
     (function(){
-      const API_BASE = 'https://aurora-backend-kund-oversvamningsskydd.onrender.com';
+      const API_BASE = 'https://stripe-payment-oversvamningsskydd-kund1.onrender.com';
+      const PRICE_ID = 'price_1S3yfvAg8z29IvXWLl0Qxn30'; // ditt UPVC Price-ID
     
-      // 🔐 Stripe Price ID för UPVC-dörren (byt till ditt verkliga)
-      const PRICE_ID = 'price_1S3yfvAg8z29IvXWLl0Qxn30';
-    
-      // Antal-dropdown
+      // Antal (dropdown)
       const toggle = document.getElementById('qty-toggle');
-      const list = document.getElementById('qty-list');
+      const list   = document.getElementById('qty-list');
       let qty = 1;
+    
+      // Sätt initial label
+      const initLabel = toggle?.querySelector('div:last-child');
+      if (initLabel) initLabel.textContent = 'Antal: ' + qty;
+    
       if (list && toggle) {
         list.querySelectorAll('.w-dropdown-link').forEach(link => {
           link.addEventListener('click', (e) => {
@@ -376,14 +378,59 @@
       const btn = document.getElementById('buy-upvc');
       const statusEl = document.getElementById('pay-status');
     
-      // Formfält
-      const getV = (id) => (document.getElementById(id)?.value || '').trim();
-      const req = (v, name) => { if (!v) throw new Error('Fyll i: ' + name); return v; };
-      const num = (v, name) => {
-        const n = parseInt(v, 10);
-        if (Number.isNaN(n)) throw new Error(name + ' måste vara ett tal');
-        return n;
+      // Hjälpare – alla fält är frivilliga
+      const val = id => (document.getElementById(id)?.value || '').trim();
+      const num = s => {
+        const n = parseInt(s, 10);
+        return Number.isNaN(n) ? null : n;
       };
+    
+      // Plocka ihop metadata endast om värden finns
+      function collectMetadata() {
+        const md = {
+          produkt: 'UPVC Dörr',
+          antal: String(qty),
+          referens_url: location.href
+        };
+    
+        const optionalMap = {
+          utforande:       val('upvc-panel'),
+          sidopaneler:     val('upvc-sides'),
+          farg:            val('upvc-color'),
+          oppningsriktning:val('upvc-swing'),
+          slagriktning:    val('upvc-hand'),
+          bredd_mm:        val('upvc-width'),
+          hojd_mm:         val('upvc-height'),
+          skydd_mm:        val('upvc-flood')
+        };
+    
+        // Normalisera tal om de finns
+        if (optionalMap.bredd_mm) {
+          const w = num(optionalMap.bredd_mm);
+          if (w !== null) optionalMap.bredd_mm = String(w);
+        }
+        if (optionalMap.hojd_mm) {
+          const h = num(optionalMap.hojd_mm);
+          if (h !== null) optionalMap.hojd_mm = String(h);
+        }
+        if (optionalMap.skydd_mm) {
+          const f = num(optionalMap.skydd_mm);
+          if (f !== null) {
+            // Endast mjuk kontroll om den finns (0–600 mm), inget krav
+            if (f < 0 || f > 600) {
+              alert('Observera: Översvämningsskydd brukar vara 0–600 mm. Värdet sparas ändå.');
+            }
+            optionalMap.skydd_mm = String(f);
+          }
+        }
+    
+        // Lägg bara till nycklar som faktiskt har värde
+        Object.entries(optionalMap).forEach(([k,v]) => {
+          if (v) md[k] = v;
+        });
+    
+        return md;
+      }
     
       async function createCheckout(metadata) {
         const r = await fetch(`${API_BASE}/api/checkout/create-session`, {
@@ -397,7 +444,7 @@
         const raw = await r.text();
         let data = null; try { data = raw ? JSON.parse(raw) : null; } catch {}
         if (!r.ok) throw new Error((data && data.message) || `HTTP ${r.status}`);
-        if (!data || !data.url) throw new Error('Oväntat svar från servern.');
+        if (!data?.url) throw new Error('Oväntat svar från servern.');
         return data.url;
       }
     
@@ -405,33 +452,7 @@
         try {
           btn.disabled = true;
           statusEl.textContent = 'Skapar betalning…';
-    
-          const panel = req(getV('upvc-panel'), 'Utförande');
-          const sides = req(getV('upvc-sides'), 'Sidopaneler');
-          const color = req(getV('upvc-color'), 'Färg');
-          const swing = req(getV('upvc-swing'), 'Öppningsriktning');
-          const hand  = req(getV('upvc-hand'), 'Slagriktning');
-    
-          const width  = num(req(getV('upvc-width'), 'Bredd (mm)'), 'Bredd (mm)');
-          const height = num(req(getV('upvc-height'), 'Höjd (mm)'), 'Höjd (mm)');
-          const flood  = num(req(getV('upvc-flood'), 'Översvämningsskydd'), 'Översvämningsskydd');
-    
-          if (flood < 0 || flood > 600) throw new Error('Översvämningsskydd måste vara 0–600 mm');
-    
-          const url = await createCheckout({
-            produkt: 'UPVC Dörr',
-            utforande: panel,
-            sidopaneler: sides,
-            farg: color,
-            oppningsriktning: swing,
-            slagriktning: hand,
-            bredd_mm: String(width),
-            hojd_mm: String(height),
-            skydd_mm: String(flood),
-            antal: String(qty),
-            referens_url: location.href
-          });
-    
+          const url = await createCheckout(collectMetadata());
           window.location.href = url;
         } catch (e) {
           console.error('[Checkout error]', e);
@@ -442,8 +463,8 @@
         }
       });
     })();
-    </script>    
+    </script>
+    
 <script src="lang-switcher.js" defer></script>
-<script src="js/aurora.js"></script>
 </body>
 </html>

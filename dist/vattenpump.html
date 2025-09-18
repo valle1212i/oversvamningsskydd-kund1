@@ -240,9 +240,12 @@
     <h1 class="heading-2"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>Makita PF1110 är en kraftfull dränkbar vattenpump med rostfritt stålhölje och hög kapacitet på upp till 15 000 liter per timme. Med sin borstlösa motor, inbyggda skyddsfunktioner och smidiga handtag är den både pålitlig och enkel att använda för dränering och bortpumpning av vatten.<br>‍<br>→ Dränkbar pump för dränering av vatten<br>→ Hölje i rostfritt stål<br>→ Borstlös motor med termoskyddsbrytare<br>→ Kapacitet: upp till 15 000 l/h<br>→ Pumpar partiklar upp till 35 mm<br>→ Inbyggt handtag för enkel transport<br>→ Flottörbrytare med automatikfunktion<br>→ Utrustad med överbelastningsskydd<br>→ Vattenpump med säkerhetsplugg<br><br><em data-i18n="page.em.2.medfo-ljande-tillbeho-r">Medföljande tillbehör:</em><br>→ 1 st anslutningsstycke<br>→ 1 st PF0610 extra slangmunstycke</strong><br><br><br><br>‍</h1>
   </div>
   <div class="button-group is-vertical-stretch">
-    <button id="buy-vattenpump" class="button on-inverse w-button" data-i18n="buy-vattenpump.button.2.ko-p-nu">
-      Köp nu
-    </button>
+    <button id="buy-vattenpump"
+        class="button on-inverse w-button"
+        data-status-target="pay-status"
+        data-i18n="buy-vattenpump.button.2.ko-p-nu">
+  Köp nu
+</button>
     <small id="pay-status" style="margin-left:8px"></small>
   </div>  
   <footer class="footer">
@@ -339,27 +342,67 @@
   <script src="js/webflow.js" type="text/javascript"></script>
   <script src="js/aurora.js"></script>
   <script>
-    (function(){
-      const API_BASE = 'https://aurora-backend-kund-oversvamningsskydd.onrender.com';
+    (function () {
+      // ✅ Peka på Stripe-webbtjänsten, inte på Aurora
+      const PAY_BASE = 'https://stripe-payment-oversvamningsskydd-kund1.onrender.com';
+  
+      // Rätta PRICE_ID till rätt produktpris i Stripe
       const PRICE_ID = 'price_1S3yTsAg8z29IvXWmtAAlilX'; // Vattenpump
-    
+  
       const btn = document.getElementById('buy-vattenpump');
       const statusEl = document.getElementById('pay-status');
-    
+  
+      async function createSession() {
+        // vissa backends har /create-session, andra /api/checkout/create-session
+        const payload = {
+          items: [{ price: PRICE_ID, quantity: 1 }],
+          successUrl: `${location.origin}/thank-you.html`,
+          cancelUrl: location.href
+        };
+  
+        // Först prova /create-session…
+        let res = await fetch(`${PAY_BASE}/create-session`, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+  
+        // …om 404, prova /api/checkout/create-session (fallback)
+        if (res.status === 404) {
+          res = await fetch(`${PAY_BASE}/api/checkout/create-session`, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+  
+        const text = await res.text();
+        let data = null; try { data = text ? JSON.parse(text) : null; } catch {}
+        if (!res.ok) throw new Error((data && data.message) || `HTTP ${res.status}`);
+  
+        // Backend bör returnera antingen {url} eller {id}
+        if (data && data.url) {
+          window.location.href = data.url;
+          return;
+        }
+  
+        if (data && data.id) {
+          // Om din backend returnerar sessionId och du använder Stripe.js:
+          const stripe = Stripe('DIN_STRIPE_PUBLISHABLE_KEY');
+          await stripe.redirectToCheckout({ sessionId: data.id });
+          return;
+        }
+  
+        throw new Error('Oväntat svar från betalservern.');
+      }
+  
       btn.addEventListener('click', async () => {
         btn.disabled = true;
         statusEl.textContent = 'Skapar betalning…';
         try {
-          const r = await fetch(`${API_BASE}/api/checkout/create-session`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ items: [{ price: PRICE_ID, quantity: 1 }] })
-          });
-          const raw = await r.text();
-          let data = null; try { data = raw ? JSON.parse(raw) : null; } catch {}
-          if (!r.ok) throw new Error((data && data.message) || `HTTP ${r.status}`);
-          if (data && data.url) { window.location.href = data.url; return; }
-          throw new Error('Oväntat svar från servern.');
+          await createSession();
         } catch (e) {
           console.error('[Checkout error]', e);
           alert('Kunde inte starta betalningen: ' + e.message);
@@ -369,9 +412,8 @@
         }
       });
     })();
-    </script>
+  </script>  
     
     <script src="lang-switcher.js" defer></script>
-    <script src="js/aurora.js"></script>
 </body>
 </html>

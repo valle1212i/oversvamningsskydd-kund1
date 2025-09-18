@@ -349,18 +349,24 @@
   <script src="js/aurora.js"></script>
   <script>
     (function(){
-      const API_BASE = 'https://aurora-backend-kund-oversvamningsskydd.onrender.com';
+      // ✅ Din riktiga Render-backend (samma som övriga sidor)
+      const API_BASE = 'https://stripe-payment-oversvamningsskydd-kund1.onrender.com';
     
-      // ⭐️ Sätt korrekt Stripe Price ID för WOODSTOCK
+      // ✅ Woodstock: korrekt Stripe Price ID
       const PRICE_ID = 'price_1S3ymwAg8z29IvXW2jFuk6oD';
-
+    
       const btn = document.getElementById('buy-woodstock');
       const statusEl = document.getElementById('pay-status');
     
-      // Antal-dropdown
+      // Antal (dropdown)
       const toggle = document.getElementById('qty-toggle');
       const list = document.getElementById('qty-list');
       let qty = 1;
+    
+      // Sätt initial label
+      const initLabel = toggle?.querySelector('div:last-child');
+      if (initLabel) initLabel.textContent = 'Antal: ' + qty;
+    
       if (list && toggle) {
         list.querySelectorAll('.w-dropdown-link').forEach(link => {
           link.addEventListener('click', (e) => {
@@ -375,66 +381,72 @@
         });
       }
     
-      // Formfält
-      const sel = document.getElementById('ws-glas');
-      const wInput = document.getElementById('ws-width');
-      const hInput = document.getElementById('ws-height');
+      // Hjälpare
+      const val = id => (document.getElementById(id)?.value || '').trim();
+      const toInt = s => {
+        const n = parseInt((s || '').trim(), 10);
+        return Number.isNaN(n) ? null : n;
+      };
+      const inRange = (n, min, max) => n >= min && n <= max;
     
-      function assertInRange(val, min, max, name){
-        if (Number.isNaN(val)) throw new Error(name + ' saknas');
-        if (val < min || val > max) throw new Error(`${name} måste vara ${min}–${max} mm`);
+      function collectMetadata(){
+        const md = {
+          produkt: 'Woodstock',
+          antal: String(qty),
+          referens_url: location.href
+        };
+    
+        const glas = val('ws-glas');
+        const w = toInt(val('ws-width'));
+        const h = toInt(val('ws-height'));
+    
+        // Bredd/Höjd är frivilliga men om angivna så validerar vi mot produktens spec
+        if (w !== null) {
+          if (!inRange(w, 670, 1050)) throw new Error('Bredd måste vara 670–1050 mm');
+          md.bredd_mm = String(w);
+        }
+        if (h !== null) {
+          if (!inRange(h, 1750, 2100)) throw new Error('Höjd måste vara 1750–2100 mm');
+          md.hojd_mm = String(h);
+        }
+        if (glas) md.glas = glas;
+    
+        return md;
       }
     
-      if (btn) {
-        btn.addEventListener('click', async () => {
-          try {
-            const glas   = sel?.value || '';
-            const width  = parseInt(wInput?.value ?? '', 10);
-            const height = parseInt(hInput?.value ?? '', 10);
-    
-            
-            assertInRange(width, 670, 1050, 'Bredd');
-            assertInRange(height, 1750, 2100, 'Höjd');
-    
-            btn.disabled = true;
-            statusEl.textContent = 'Skapar betalning…';
-    
-            const r = await fetch(`${API_BASE}/api/checkout/create-session`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                items: [{ price: PRICE_ID, quantity: qty }],
-                metadata: {
-                  produkt: 'Woodstock',
-                  glas: glas,
-                  bredd_mm: String(width),
-                  hojd_mm: String(height),
-                  antal: String(qty),
-                  url: location.href
-                }
-              })
-            });
-    
-            const raw = await r.text();
-            let data = null; try { data = raw ? JSON.parse(raw) : null; } catch {}
-            if (!r.ok) throw new Error((data && data.message) || `HTTP ${r.status}`);
-    
-            if (data && data.url) {
-              window.location.href = data.url;
-              return;
-            }
-            throw new Error('Oväntat svar från servern.');
-          } catch (e) {
-            console.error('[Checkout error]', e);
-            alert('Kunde inte starta betalningen: ' + e.message);
-          } finally {
-            btn.disabled = false;
-            statusEl.textContent = '';
-          }
+      async function createCheckout(metadata) {
+        const r = await fetch(`${API_BASE}/api/checkout/create-session`, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            items: [{ price: PRICE_ID, quantity: qty }],
+            metadata
+          })
         });
+        const raw = await r.text();
+        let data = null; try { data = raw ? JSON.parse(raw) : null; } catch {}
+        if (!r.ok) throw new Error((data && data.message) || `HTTP ${r.status}`);
+        if (!data?.url) throw new Error('Oväntat svar från servern.');
+        return data.url; // 🔁 Stripe Checkout-länk från Render-backend
       }
+    
+      btn?.addEventListener('click', async () => {
+        try {
+          btn.disabled = true;
+          statusEl.textContent = 'Skapar betalning…';
+          const url = await createCheckout(collectMetadata());
+          window.location.href = url; // ✅ redirect till Stripe
+        } catch (e) {
+          console.error('[Checkout error]', e);
+          alert('Kunde inte starta betalningen: ' + e.message);
+        } finally {
+          btn.disabled = false;
+          statusEl.textContent = '';
+        }
+      });
     })();
-    </script>    
+    </script>
+    
 <script src="lang-switcher.js" defer></script>
 <script src="js/aurora.js"></script>
 </body></html>

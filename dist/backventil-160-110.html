@@ -365,37 +365,57 @@
   <script src="js/aurora.js"></script>
   <script>
     (function(){
-      const API_BASE = 'https://aurora-backend-kund-oversvamningsskydd.onrender.com';
+      const PAY_BASE = 'https://stripe-payment-oversvamningsskydd-kund1.onrender.com';
       const PRICE_ID = 'price_1S3yYEAg8z29IvXWNk5aq56B'; // Backventil 160/110
-    
+  
       const btn = document.getElementById('buy-backventil-160-110');
       const statusEl = document.getElementById('pay-status');
-    
-      btn.addEventListener('click', async () => {
-        btn.disabled = true;
-        statusEl.textContent = 'Skapar betalning…';
-        try {
-          const r = await fetch(`${API_BASE}/api/checkout/create-session`, {
+  
+      async function createSession() {
+        const payload = {
+          items: [{ price: PRICE_ID, quantity: 1 }],
+          successUrl: `${location.origin}/thank-you.html`,
+          cancelUrl: location.href
+        };
+  
+        let res = await fetch(`${PAY_BASE}/create-session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          mode: 'cors',
+          body: JSON.stringify(payload)
+        });
+        if (res.status === 404) {
+          res = await fetch(`${PAY_BASE}/api/checkout/create-session`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ items: [{ price: PRICE_ID, quantity: 1 }] })
+            mode: 'cors',
+            body: JSON.stringify(payload)
           });
-          const raw = await r.text();
-          let data = null; try { data = raw ? JSON.parse(raw) : null; } catch {}
-          if (!r.ok) throw new Error((data && data.message) || `HTTP ${r.status}`);
-          if (data && data.url) { window.location.href = data.url; return; }
-          throw new Error('Oväntat svar från servern.');
+        }
+  
+        const raw = await res.text();
+        let data = null; try { data = raw ? JSON.parse(raw) : null; } catch {}
+        if (!res.ok) throw new Error((data && data.message) || `HTTP ${res.status}`);
+        if (data && data.url) { window.location.href = data.url; return; }
+        throw new Error('Oväntat svar från betalservern.');
+      }
+  
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        if (statusEl) statusEl.textContent = 'Skapar betalning…';
+        try {
+          await createSession();
         } catch (e) {
           console.error('[Checkout error]', e);
           alert('Kunde inte starta betalningen: ' + e.message);
         } finally {
           btn.disabled = false;
-          statusEl.textContent = '';
+          if (statusEl) statusEl.textContent = '';
         }
       });
     })();
-    </script>
+  </script>
+  
 <script src="lang-switcher.js" defer></script>
-<script src="js/aurora.js"></script>
 </body>
 </html>

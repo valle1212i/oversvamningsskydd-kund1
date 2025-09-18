@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <!DOCTYPE html><html data-wf-page="68b99a7ca9f60c18b31bd7f6" data-wf-site="68b5e4fe195b2b7b75214b94"><head>
   <meta charset="utf-8">
   <title data-i18n="page.title.2.sandman">SANDMAN</title>
@@ -349,15 +348,19 @@
   <script src="js/aurora.js"></script>
   <script>
     (function(){
-      const API_BASE = 'https://aurora-backend-kund-oversvamningsskydd.onrender.com';
-      // Byt till ditt riktiga Stripe Price-ID för Sandman:
+      const API_BASE = 'https://stripe-payment-oversvamningsskydd-kund1.onrender.com';
+      // Stripe Price-ID för Sandman
       const PRICE_ID = 'price_1S3yhVAg8z29IvXWFSggZGeS';
-
     
       // Antal (dropdown)
       const qtyToggle = document.getElementById('sandman-qty-toggle');
       const qtyList   = document.getElementById('sandman-qty-list');
       let qty = 1;
+    
+      // Sätt initial label
+      const initLabel = qtyToggle?.querySelector('div:last-child');
+      if (initLabel) initLabel.textContent = 'Antal: ' + qty;
+    
       if (qtyList && qtyToggle) {
         qtyList.querySelectorAll('.w-dropdown-link').forEach(link => {
           link.addEventListener('click', (e) => {
@@ -372,36 +375,27 @@
         });
       }
     
-      // Hjälpare
-      const getV = (id) => (document.getElementById(id)?.value || '').trim();
-      const req  = (v, name) => { if (!v) throw new Error('Fyll i: ' + name); return v; };
-      const num  = (v, name) => {
-        const n = parseInt(v, 10);
-        if (Number.isNaN(n)) throw new Error(name + ' måste vara ett tal');
-        return n;
-      };
-      function inRange(n, min, max, name){
-        if (n < min || n > max) throw new Error(`${name} måste vara ${min}–${max} mm`);
-        return n;
-      }
-    
-      async function createCheckout(metadata) {
+      async function createCheckout() {
         const r = await fetch(`${API_BASE}/api/checkout/create-session`, {
           method: 'POST',
           headers: {'Content-Type':'application/json'},
           body: JSON.stringify({
             items: [{ price: PRICE_ID, quantity: qty }],
-            metadata
+            metadata: {
+              produkt: 'Sandman Dörr',
+              serie: 'Designserien',
+              antal: String(qty),
+              referens_url: location.href
+            }
           })
         });
         const raw = await r.text();
         let data = null; try { data = raw ? JSON.parse(raw) : null; } catch {}
         if (!r.ok) throw new Error((data && data.message) || `HTTP ${r.status}`);
-        if (!data || !data.url) throw new Error('Oväntat svar från servern.');
+        if (!data?.url) throw new Error('Oväntat svar från servern.');
         return data.url;
       }
     
-      // Köp
       const btn = document.getElementById('buy-sandman');
       const statusEl = document.getElementById('sandman-status');
     
@@ -409,28 +403,7 @@
         try {
           btn.disabled = true;
           statusEl.textContent = 'Skapar betalning…';
-    
-          const glas = req(getV('sandman-glas'), 'Glas');
-          const farg = req(getV('sandman-farg'), 'Färg');
-          const opp  = req(getV('sandman-opp'), 'Öppningsriktning');
-          const slag = req(getV('sandman-slag'), 'Slagriktning');
-    
-          const bredd = inRange(num(req(getV('sandman-bredd'), 'Bredd (mm)'), 'Bredd (mm)'), 670, 1050, 'Bredd (mm)');
-          const hojd  = inRange(num(req(getV('sandman-hojd'),  'Höjd (mm)'),  'Höjd (mm)'), 1750, 2100, 'Höjd (mm)');
-    
-          const url = await createCheckout({
-            produkt: 'Sandman Dörr',
-            serie: 'Designserien',
-            glas: glas,
-            farg: farg,
-            oppningsriktning: opp,
-            slagriktning: slag,
-            bredd_mm: String(bredd),
-            hojd_mm: String(hojd),
-            antal: String(qty),
-            referens_url: location.href
-          });
-    
+          const url = await createCheckout();
           window.location.href = url;
         } catch (e) {
           console.error('[Checkout error]', e);
@@ -441,8 +414,8 @@
         }
       });
     })();
-    </script>    
+    </script>
+    
 <script src="lang-switcher.js" defer></script>
-<script src="js/aurora.js"></script>
 </body>
 </html>
