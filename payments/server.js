@@ -4,6 +4,7 @@ import express from "express";
 import cors from "cors";
 import Stripe from "stripe";
 import getRawBody from "raw-body";
+import makePayoutsRouter from "./routes/payouts.js";
 // --- MongoDB ---
 import { MongoClient, ServerApiVersion } from "mongodb";
 
@@ -70,7 +71,7 @@ const corsOptions = {
   },
   credentials: false,
   methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "x-csrf-token", "authorization", "x-requested-with"],
+  allowedHeaders: ["Content-Type", "x-csrf-token", "authorization", "x-requested-with", "X-Internal-Auth", "X-Tenant"],
   optionsSuccessStatus: 204,
   maxAge: 600,
 };
@@ -402,7 +403,7 @@ app.post("/api/stripe/webhook", async (req, res) => {
 });
 
 app.use(express.json());
-
+app.use("/api/payouts", makePayoutsRouter({ stripe }));
 // === Hämta en betalning ===
 app.get("/api/payments/:sessionId", async (req, res) => {
   try {
