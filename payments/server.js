@@ -526,3 +526,11 @@ const PORT = process.env.PORT || 8081;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Payments API listening on ${PORT}`);
 });
+// TEMP: diagnostik – hjälper oss att se varför requireInternal 401:ar
+app.get('/_diag/internal', (req, res) => {
+  const provided = req.get('X-Internal-Auth') || null;
+  const hasSecret = Boolean(process.env.X_PAYMENTS_SECRET);
+  const providedLen = provided ? provided.length : 0;
+  const match = hasSecret && provided && (provided === process.env.X_PAYMENTS_SECRET);
+  return res.json({ hasSecret, providedLen, match });
+});
