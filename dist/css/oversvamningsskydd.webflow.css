@@ -7149,5 +7149,42 @@
 .text-force-black * {
   color: #000 !important;
 }
+/* === Barriär Dörrar: jämna korthöjder === */
+#barriardorrar .card_product,
+#barriardorrar .product-card,
+#barriardorrar .w-dyn-item {            /* träffar CMS-items om du använder Webflow CMS */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 
+/* “låser” bildhöjd + beskär snyggt så korten inte blir olika höga */
+#barriardorrar .card_product img,
+#barriardorrar .product-card img,
+#barriardorrar .w-dyn-item img.image_cover {
+  width: 100%;
+  height: 220px;          /* justera 200–260px efter smak */
+  object-fit: cover;
+  display: block;
+  border-radius: 12px;    /* matcha övriga kort */
+}
 
+/* textdelen fyller ut – specs hamnar i botten så höjderna blir lika */
+#barriardorrar .card_body,
+#barriardorrar .product-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  flex: 1;
+}
+
+#barriardorrar .spec-list { margin-top: auto; }
+
+/* Mobil: lite lägre bildhöjd */
+@media (max-width: 767px) {
+  #barriardorrar .card_product img,
+  #barriardorrar .product-card img,
+  #barriardorrar .w-dyn-item img.image_cover {
+    height: 180px;
+  }
+}

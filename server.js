@@ -6,6 +6,8 @@ import { OpenAI } from 'openai';
 import fs from 'node:fs/promises';
 import crypto from 'node:crypto';
 import i18nRouter from './server/i18n-router.js';
+import payoutsRoutes from './routes/payouts.js';
+
 
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -26,6 +28,8 @@ const ALLOWED_ORIGINS = new Set([
   'https://oversvamningsskydd-kund1.onrender.com',
   'https://vattentrygg.se',
   'https://www.vattentrygg.se',
+  'https://source-database.onrender.com',        
+'https://source-database.onrender.com/' 
 ]);
 const corsOptions = {
   origin(origin, cb) {
@@ -33,7 +37,7 @@ const corsOptions = {
     return cb(new Error(`CORS blocked for origin: ${origin}`));
   },
   methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type'],
+   allowedHeaders: ['Content-Type', 'X-Internal-Auth', 'X-Tenant'],
   credentials: false,
   optionsSuccessStatus: 204,
 };
@@ -44,6 +48,8 @@ app.options('*', cors(corsOptions));
 app.use('/i18n', i18nRouter);                       // GET /i18n/:locale → i18n/strings.xx.json
 app.use(express.static(join(__dirname, 'public'))); // /lang-switcher.js
 app.use(express.static(join(__dirname, 'dist')));   // Webflow-export
+app.use('/api/payouts', payoutsRoutes);
+
 
 // ...OpenAI, dina API-routes etc. följer som du har...
 
