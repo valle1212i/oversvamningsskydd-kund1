@@ -1,4 +1,5 @@
-module.exports = (req, res, next) => {
+// /middleware/requireInternal.js
+export default function requireInternal(req, res, next) {
     const expected = process.env.X_PAYMENTS_SECRET;
     if (!expected) {
       return res.status(500).json({ success:false, message:'X_PAYMENTS_SECRET saknas i env' });
@@ -7,5 +8,5 @@ module.exports = (req, res, next) => {
       return res.status(401).json({ success:false, message:'Unauthorized' });
     }
     next();
-  };
+  }
   
