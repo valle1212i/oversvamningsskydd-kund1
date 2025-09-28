@@ -7211,3 +7211,17 @@
     margin-top: 8px;
   }
 }
+.partners-logos{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding: 16px 0;           /* valfritt mellanrum */
+}
+
+.partners-logos img{
+  display:block;
+  max-width: 1100px;         /* justera efter ditt grid */
+  width: 100%;               /* responsiv */
+  height: auto;
+  margin: 0 auto;
+}
