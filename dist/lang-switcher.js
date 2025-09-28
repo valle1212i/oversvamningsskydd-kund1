@@ -3,20 +3,23 @@
 
   const DEFAULT_LANG = 'sv';
   const SUPPORTED = ['sv', 'en', 'da', 'no'];
+  const FLAGS_BASE = './flags/'; // resolves to /dist/flags locally and /flags in prod
 
-  // ---- storage ----
-  const getSavedLang = () => (SUPPORTED.includes(localStorage.getItem('lang')) ? localStorage.getItem('lang') : DEFAULT_LANG);
+
+  // ---- Storage ----
+  const getSavedLang = () => {
+    const v = localStorage.getItem('lang');
+    return SUPPORTED.includes(v) ? v : DEFAULT_LANG;
+  };
   const saveLang = (lang) => localStorage.setItem('lang', lang);
 
-  // ---- load & apply strings ----
+  // ---- i18n load/apply ----
   async function loadStrings(lang) {
-    // OBS: relativ sökväg från din /dist/
-    const url = `i18n/${lang}/strings.json`;
+    const url = `/i18n/${lang}/strings.json`;
     const res = await fetch(url, { cache: 'no-cache' });
     if (!res.ok) throw new Error(`Could not load ${url}`);
     return res.json();
   }
-
   function applyStrings(strings) {
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
@@ -31,24 +34,76 @@
       });
     });
   }
-
-  // ---- html lang + classes ----
   function markHtmlLang(lang) {
     document.documentElement.setAttribute('lang', lang);
     SUPPORTED.forEach(l => document.documentElement.classList.remove('lang-' + l));
     document.documentElement.classList.add('lang-' + lang);
   }
 
-  // ---- ui helpers ----
-  function highlightActiveButton(lang) {
-    document.querySelectorAll('.lang-switcher .lang-btn').forEach(btn => {
-      const active = btn.getAttribute('data-lang') === lang;
-      btn.classList.toggle('is-active', active);
-      btn.setAttribute('aria-pressed', String(active));
+  // ---- UI builder (SVG + vit dropdown) ----
+  function renderSwitcher(mount, current) {
+    mount.innerHTML = ''; // reset
+
+    const wrap = document.createElement('div');
+    wrap.className = 'lang-switcher dd';
+    wrap.innerHTML = `
+      <button type="button" class="lang-toggle" aria-haspopup="true" aria-expanded="false">
+        <img class="flag" src="${FLAGS_BASE}${current}.svg" alt="" width="20" height="14">
+        <span class="code">${current.toUpperCase()}</span>
+        <svg class="chev" viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M5.8 7.5l4.2 4.2 4.2-4.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <span class="visually-hidden" id="lang-switcher-label">Language</span>
+      </button>
+      <div class="lang-menu" role="menu" aria-labelledby="lang-switcher-label"></div>
+    `;
+
+    const menu = wrap.querySelector('.lang-menu');
+    const items = [
+      { lang:'sv', label:'Svenska' },
+      { lang:'en', label:'English' },
+      { lang:'da', label:'Dansk' },
+      { lang:'no', label:'Norsk' },
+    ];
+    items.forEach(({lang,label}) => {
+      const btn = document.createElement('button');
+      btn.className = 'lang-item';
+      btn.setAttribute('role','menuitem');
+      btn.setAttribute('data-lang', lang);
+      btn.innerHTML = `
+       <img class="flag" src="${FLAGS_BASE}${lang}.svg" alt="" width="20" height="14">
+        <span class="label">${label}</span>
+      `;
+      btn.addEventListener('click', () => setLanguage(lang));
+      menu.appendChild(btn);
     });
+
+    // toggle open/close
+    const toggle = wrap.querySelector('.lang-toggle');
+    toggle.addEventListener('click', () => {
+      const open = wrap.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', String(open));
+    });
+
+    // close on outside/Escape
+    document.addEventListener('click', (e) => {
+      if (!wrap.contains(e.target)) {
+        wrap.classList.remove('open');
+        toggle.setAttribute('aria-expanded','false');
+      }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        wrap.classList.remove('open');
+        toggle.setAttribute('aria-expanded','false');
+        toggle.focus();
+      }
+    });
+
+    mount.appendChild(wrap);
   }
 
-  // ---- main: setLanguage ----
+  // ---- main setter (single source of truth) ----
   async function setLanguage(lang) {
     if (!SUPPORTED.includes(lang)) lang = DEFAULT_LANG;
 
@@ -62,95 +117,47 @@
       console.error('[i18n] Failed to apply', lang, e);
     }
 
-    const sel = document.getElementById('lang-select');
-    if (sel && sel.value !== lang) sel.value = lang;
-
-    const wfBtn = document.querySelector('[data-lang-switch="' + lang + '"]');
-    if (wfBtn) { try { wfBtn.click(); } catch (_) {} }
-
-    highlightActiveButton(lang);
-    document.dispatchEvent(new CustomEvent('i18n:changed', { detail: { lang } }));
-  }
-
-  // ---- mount switcher ----
-  function ensureSwitcher() {
-    if (document.querySelector('.lang-switcher')) return;
-
-    // 1) försök montera där du vill ha den (lägg gärna <div id="lang-mount"></div> i navbaren)
-    const container =
-      document.getElementById('lang-mount') ||
-      document.querySelector('.nav .button-group') ||
-      document.querySelector('.nav_right') ||
-      document.querySelector('.nav') ||
-      document.body;
-
-    // 2) skapa wrapper + enkel “guard CSS” så UI alltid syns
-    if (!document.getElementById('lang-switcher-guard')) {
-      const guard = document.createElement('style');
-      guard.id = 'lang-switcher-guard';
-      guard.textContent = `
-        .lang-switcher{display:flex;gap:8px;align-items:center}
-        .lang-switcher .lang-btn{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid rgba(0,0,0,.15);border-radius:8px;background:#fff;cursor:pointer}
-        .lang-switcher .lang-btn.is-active{outline:2px solid #3b82f6; outline-offset:2px}
-        .lang-switcher .flag{width:20px;height:14px;display:inline-block;background-size:cover;background-position:center;border:1px solid rgba(0,0,0,.1)}
-        .lang-switcher .abbr{font:500 12px/1.1 system-ui, -apple-system, Segoe UI, Roboto, sans-serif}
-        /* fallback-select göms men finns kvar för skärmläsare */
-        #lang-select{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
-        .visually-hidden{position:absolute!important;height:1px;width:1px;overflow:hidden;clip:rect(1px, 1px, 1px, 1px);white-space:nowrap}
-      `;
-      document.head.appendChild(guard);
+    // uppdatera UI (flagga + kod) om switchern finns
+    const wrap = document.querySelector('.lang-switcher.dd');
+    if (wrap) {
+      const img = wrap.querySelector('.lang-toggle .flag');
+      const code = wrap.querySelector('.lang-toggle .code');
+      if (img) img.src = `${FLAGS_BASE}${lang}.svg`;
+      if (code) code.textContent = lang.toUpperCase();
+      // stäng meny
+      wrap.classList.remove('open');
+      wrap.querySelector('.lang-toggle')?.setAttribute('aria-expanded','false');
     }
 
-    const wrapper = document.createElement('div');
-    wrapper.className = 'lang-switcher';
-    wrapper.innerHTML = `
-      <span class="visually-hidden" id="lang-switcher-label">Language</span>
+    // ev. webflow-knapp-kompabilitet (om ni har kvar dem)
+    const wfBtn = document.querySelector('[data-lang-switch="' + lang + '"]');
+    if (wfBtn) { try { wfBtn.click(); } catch(_) {} }
 
-      <button type="button" class="lang-btn" data-lang="sv" aria-label="Svenska" aria-pressed="false">
-        <span class="flag" data-lang="sv" aria-hidden="true"></span><span class="abbr">SV</span>
-      </button>
-      <button type="button" class="lang-btn" data-lang="en" aria-label="English" aria-pressed="false">
-        <span class="flag" data-lang="en" aria-hidden="true"></span><span class="abbr">EN</span>
-      </button>
-      <button type="button" class="lang-btn" data-lang="da" aria-label="Dansk" aria-pressed="false">
-        <span class="flag" data-lang="da" aria-hidden="true"></span><span class="abbr">DA</span>
-      </button>
-      <button type="button" class="lang-btn" data-lang="no" aria-label="Norsk" aria-pressed="false">
-        <span class="flag" data-lang="no" aria-hidden="true"></span><span class="abbr">NO</span>
-      </button>
-
-      <label for="lang-select" class="visually-hidden">Language</label>
-      <select id="lang-select" aria-label="Language">
-        <option value="sv">SV</option>
-        <option value="en">EN</option>
-        <option value="da">DA</option>
-        <option value="no">NO</option>
-      </select>
-    `;
-    container.appendChild(wrapper);
-
-    // 3) sätt flaggbakgrunder inline (så du slipper vänta på extern CSS)
-    wrapper.querySelectorAll('.flag').forEach(span => {
-      const code = span.getAttribute('data-lang');
-      span.style.backgroundImage = `url("flags/${code}.svg")`;
-    });
-
-    // 4) koppla events
-    wrapper.querySelectorAll('.lang-btn').forEach(btn => {
-      btn.addEventListener('click', () => setLanguage(btn.getAttribute('data-lang')));
-    });
-    const sel = wrapper.querySelector('#lang-select');
-    if (sel) sel.addEventListener('change', (e) => setLanguage(e.target.value));
+    document.dispatchEvent(new CustomEvent('i18n:changed', { detail: { lang } }));
   }
 
   // ---- init ----
   document.addEventListener('DOMContentLoaded', () => {
-    ensureSwitcher();
     const initial = getSavedLang();
-    const sel = document.getElementById('lang-select');
-    if (sel) sel.value = initial;
+
+    // montera bredvid CTA om mount finns, annars försök i .button-group
+    let mount = document.getElementById('lang-mount')
+            || document.querySelector('.button-group')
+            || document.body;
+
+    // Om mount är .button-group (inte en separat div) – skapa liten behållare
+    if (mount && mount.classList.contains('button-group')) {
+      const holder = document.createElement('div');
+      holder.id = 'lang-mount';
+      mount.appendChild(holder);
+      mount = holder;
+    }
+
+    renderSwitcher(mount, initial);
     setLanguage(initial);
   });
 
+  // global (valfritt)
   window.i18n = { setLanguage, getSavedLang };
 })();
+
