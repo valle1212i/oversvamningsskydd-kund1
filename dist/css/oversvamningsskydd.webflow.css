@@ -7286,3 +7286,34 @@
 
 /* Gör knappen och språkväxlaren på samma rad med CTA-gruppen */
 .button-group { display: flex; align-items: center; gap: 8px; }
+/* Produktsida: gör hero-/produktbilder responsiva */
+.product-hero img,
+.product-media img,
+.product_image img,
+.product-figure img {
+  display: block;
+  width: 100%;
+  height: auto !important;     /* stoppa stretch */
+  object-fit: contain;         /* bevara proportioner inne i ytan */
+  max-width: 100%;
+  max-height: 70vh;            /* begränsa höjd på mobil så den inte tar hela skärmen */
+}
+
+/* Lite snävare på små mobiler */
+@media (max-width: 480px) {
+  .product-hero img,
+  .product-media img,
+  .product_image img,
+  .product-figure img {
+    max-height: 55vh;
+  }
+}
+
+/* Om någon container tvingar höjd – neutralisera */
+.product-hero,
+.product-media,
+.product_image,
+.product-figure {
+  height: auto !important;
+  min-height: 0 !important;
+}
