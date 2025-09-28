@@ -16,7 +16,39 @@ import { dirname, join } from 'node:path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// ...läs products/faq...
+// --- Läs in products/faq (robust fallback) ---
+function loadAuroraData() {
+  // products.json
+  try {
+    const prodTxt = readFileSync(join(__dirname, 'dist', 'data', 'products.json'), 'utf8');
+    try {
+      globalThis.products = JSON.parse(prodTxt);
+    } catch (e) {
+      console.warn('Aurora: kunde inte JSON-parsa products.json – använder tom lista.', e?.message);
+      globalThis.products = [];
+    }
+  } catch (e) {
+    console.warn('Aurora: products.json saknas – använder tom lista.', e?.message);
+    globalThis.products = [];
+  }
+
+  // faq.json
+  try {
+    const faqTxt = readFileSync(join(__dirname, 'dist', 'data', 'faq.json'), 'utf8');
+    try {
+      globalThis.faq = JSON.parse(faqTxt);
+    } catch (e) {
+      console.warn('Aurora: kunde inte JSON-parsa faq.json – använder tom lista.', e?.message);
+      globalThis.faq = [];
+    }
+  } catch (e) {
+    console.warn('Aurora: faq.json saknas – använder tom lista.', e?.message);
+    globalThis.faq = [];
+  }
+}
+loadAuroraData();
+
+
 
 const app = express();
 app.use(express.json({ limit: '32kb' }));
@@ -70,14 +102,22 @@ function buildContext() {
     'If you do not know, say so and suggest contacting support.',
   ];
 
-  const prodLines = products
-    .map(
-      (p) =>
-        `• ${p.name}: ${p.type}, användning: ${p.use}, kapacitet: ${p.specs}, passar: ${p.suits}, artikel/id: ${p.sku}`
-    )
-    .join('\n');
+  // Läs säkert från global scope om det finns, annars tomma listor
+  const pList = Array.isArray(globalThis.products) ? globalThis.products : [];
+  const fList = Array.isArray(globalThis.faq) ? globalThis.faq : [];
 
-  const faqLines = faq.map((f) => `Q: ${f.q}\nA: ${f.a}`).join('\n\n');
+  if (pList.length === 0) console.warn('Aurora: products saknas (använder fallback).');
+  if (fList.length === 0) console.warn('Aurora: faq saknas (använder fallback).');
+
+  const prodLines = pList
+    .map((p) =>
+      `• ${p.name}: ${p.type}, användning: ${p.use}, kapacitet: ${p.specs}, passar: ${p.suits}, artikel/id: ${p.sku}`
+    )
+    .join('\n') || '• Produktkatalog saknas just nu.';
+
+  const faqLines = fList
+    .map((f) => `Q: ${f.q}\nA: ${f.a}`)
+    .join('\n\n') || 'Inga FAQ-poster tillgängliga.';
 
   return `${bullets.join('\n')}
 
@@ -88,6 +128,7 @@ FAQ & RIKTLINJER:
 ${faqLines}
 `;
 }
+
 
 // ----------------------------------------------------
 // Hjälpare: IP-hash & cooldown
