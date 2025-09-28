@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 16">
+  <rect width="24" height="16" fill="#BA0C2F"/>
+  <!-- Vit kors -->
+  <rect x="6" width="5" height="16" fill="#FFFFFF"/>
+  <rect y="5.5" width="24" height="5" fill="#FFFFFF"/>
+  <!-- Blått kors -->
+  <rect x="7.5" width="2" height="16" fill="#00205B"/>
+  <rect y="6.5" width="24" height="2" fill="#00205B"/>
+</svg>
