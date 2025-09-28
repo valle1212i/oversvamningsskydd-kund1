@@ -7317,3 +7317,33 @@
   height: auto !important;
   min-height: 0 !important;
 }
+/* === PRODUKTBILD: FIXA STRETCH PÅ MOBIL === */
+
+/* 1) Nollställ tvingande höjder i wrappern */
+.div-block {
+  height: auto !important;
+  min-height: 0 !important;
+  padding-top: 0 !important;       /* ifall en "ratio hack" används */
+}
+
+/* 2) Gör bilden responsiv – aldrig höjd-stretch */
+.div-block > img {
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  object-fit: contain;             /* behåll proportioner */
+}
+
+/* 3) Begränsa höjd på små skärmar så den inte tar hela viewporten */
+@media (max-width: 767px) {
+  .div-block > img {
+    max-height: 70vh;              /* kan sänkas till 60–55vh om du vill */
+  }
+}
+
+/* 4) Om Webflow satt generella regler som spökar: neutralisera */
+img.w-richtext-figure, .w-richtext img, img[src*="images/ChatGPT-Image"] {
+  height: auto !important;
+  max-width: 100% !important;
+}
