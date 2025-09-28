@@ -66,6 +66,29 @@
       }
       .a-user { background: #12243a; align-self: flex-end; }
       .a-bot { background: #0f172a; }
+            .typing {
+        display: flex;
+        gap: 4px;
+        margin: 8px 0;
+      }
+      .typing .dot {
+        width: 6px;
+        height: 6px;
+        background: #e5e7eb;
+        border-radius: 50%;
+        animation: blink 1.4s infinite both;
+      }
+      .typing .dot:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .typing .dot:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+      @keyframes blink {
+        0%, 80%, 100% { opacity: 0.2; }
+        40% { opacity: 1; }
+      }
+
     `);
     document.head.appendChild(style);
   
@@ -99,7 +122,22 @@
       logEl.scrollTop = logEl.scrollHeight;
     }
   
-  
+    function showTyping() {
+      const log = document.getElementById('aurora-log');
+      const indicator = el('div', { class: 'typing', id: 'typing' }, [
+        el('div', { class: 'dot' }),
+        el('div', { class: 'dot' }),
+        el('div', { class: 'dot' })
+      ]);
+      log.appendChild(indicator);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function hideTyping() {
+      const t = document.getElementById('typing');
+      if (t) t.remove();
+    }
+
     async function send() {
       const input = document.getElementById('aurora-in');
       const q = input.value.trim();
@@ -108,6 +146,7 @@
       push('user', q);
   
       try {
+        showTyping();
         const res = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -115,23 +154,23 @@
         });
 
         if (!res.ok) {
-          // Backend 4xx/5xx (t.ex. 500) – visa snällt fel
           throw new Error(`API error ${res.status}`);
         }
 
         let data = {};
         try {
           data = await res.json();
-        } catch (_) {
-          // Om backend inte skickar JSON vid fel – undvik extra krascher
-        }
+        } catch (_) {}
 
+        hideTyping();
         const answer = (data && data.answer) ? data.answer : 'Tyvärr, jag saknar ett svar just nu.';
         push('bot', answer);
+
 
   
         history = [...history, { role: 'user', content: q }, { role: 'assistant', content: answer }].slice(-10);
       } catch (e) {
+        hideTyping();
         push('bot', 'Tekniskt fel – försök igen om en liten stund.');
       }
     }
