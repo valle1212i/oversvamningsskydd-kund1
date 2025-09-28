@@ -1,10 +1,11 @@
+// dist/js/lang-switcher.js
 (function () {
   'use strict';
 
   const DEFAULT_LANG = 'sv';
   const SUPPORTED = ['sv', 'en', 'da', 'no'];
 
-  // -------- Storage --------
+  // ---------- storage ----------
   function getSavedLang() {
     const v = localStorage.getItem('lang');
     return SUPPORTED.includes(v) ? v : DEFAULT_LANG;
@@ -13,7 +14,7 @@
     localStorage.setItem('lang', lang);
   }
 
-  // -------- Ladda & applicera strängar --------
+  // ---------- strings load/apply ----------
   async function loadStrings(lang) {
     const url = `/i18n/${lang}/strings.json`;
     const res = await fetch(url, { cache: 'no-cache' });
@@ -22,14 +23,12 @@
   }
 
   function applyStrings(strings) {
-    // textnoder
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
       if (key && strings[key] != null) el.textContent = strings[key];
     });
-    // attribut
     document.querySelectorAll('[data-i18n-attr]').forEach(el => {
-      const mapping = el.getAttribute('data-i18n-attr'); // ex: title:key.path,placeholder:key2.path
+      const mapping = el.getAttribute('data-i18n-attr');
       if (!mapping) return;
       mapping.split(',').forEach(pair => {
         const [attr, key] = pair.split(':').map(s => s.trim());
@@ -38,23 +37,26 @@
     });
   }
 
-  // -------- <html lang> + lang-klasser --------
+  // ---------- <html lang> ----------
   function markHtmlLang(lang) {
     document.documentElement.setAttribute('lang', lang);
     SUPPORTED.forEach(l => document.documentElement.classList.remove('lang-' + l));
     document.documentElement.classList.add('lang-' + lang);
   }
 
-  // -------- UI: markera aktiv flaggknapp --------
+  // ---------- UI helpers ----------
   function highlightActiveButton(lang) {
     document.querySelectorAll('.lang-switcher .lang-btn').forEach(btn => {
       const isActive = btn.getAttribute('data-lang') === lang;
       btn.classList.toggle('is-active', isActive);
       btn.setAttribute('aria-pressed', String(isActive));
+      // simple inline visual (no external CSS needed)
+      btn.style.outline = isActive ? '2px solid rgba(0,0,0,0.25)' : 'none';
+      btn.style.borderRadius = '8px';
     });
   }
 
-  // -------- Byt språk (enda källan till sanning) --------
+  // ---------- main setter ----------
   async function setLanguage(lang) {
     if (!SUPPORTED.includes(lang)) lang = DEFAULT_LANG;
 
@@ -68,87 +70,108 @@
       console.error('[i18n] Failed to apply', lang, e);
     }
 
-    // Synka fallback-select om den finns
     const sel = document.getElementById('lang-select');
     if (sel && sel.value !== lang) sel.value = lang;
 
-    // Om du fortfarande använder Webflow-triggerknappar
     const wfBtn = document.querySelector('[data-lang-switch="' + lang + '"]');
     if (wfBtn) { try { wfBtn.click(); } catch (_) {} }
 
-    // Markera aktiv flagg
     highlightActiveButton(lang);
 
-    // Egen event
     document.dispatchEvent(new CustomEvent('i18n:changed', { detail: { lang } }));
   }
 
-  // -------- Skapa/injicera flagg-switcher --------
+  // ---------- switcher mount ----------
   function ensureSwitcher() {
     if (document.querySelector('.lang-switcher')) return;
 
-    // Försök montera bredvid CTA. Lägg gärna <div id="lang-mount"></div> i nav för exakt placering.
-    let container = document.getElementById('lang-mount')
-                 || document.querySelector('.nav .button-group')
-                 || document.querySelector('.nav_right')
-                 || document.querySelector('.nav')
-                 || document.body;
+    let container =
+      document.getElementById('lang-mount') ||
+      document.querySelector('.nav .button-group') ||
+      document.querySelector('.nav_right') ||
+      document.querySelector('.nav') ||
+      null;
 
     const wrapper = document.createElement('div');
     wrapper.className = 'lang-switcher';
+    // Minimal inline styles so it shows even utan CSS
+    Object.assign(wrapper.style, {
+      display: 'flex',
+      gap: '8px',
+      alignItems: 'center',
+      zIndex: '9999'
+    });
+
+    // If no container found, pin it fixed top-right
+    if (!container) {
+      container = document.body;
+      Object.assign(wrapper.style, {
+        position: 'fixed',
+        top: '12px',
+        right: '12px',
+        background: 'rgba(255,255,255,0.9)',
+        padding: '6px 8px',
+        borderRadius: '10px',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
+        backdropFilter: 'saturate(180%) blur(8px)'
+      });
+      console.warn('[i18n] No nav container found; mounted switcher fixed top-right.');
+    }
+
     wrapper.innerHTML = `
       <span class="visually-hidden" id="lang-switcher-label">Language</span>
 
-      <button type="button" class="lang-btn" data-lang="sv" aria-label="Svenska" aria-pressed="false">
-        <span class="flag" data-lang="sv" aria-hidden="true"></span>
-      </button>
-      <button type="button" class="lang-btn" data-lang="en" aria-label="English" aria-pressed="false">
-        <span class="flag" data-lang="en" aria-hidden="true"></span>
-      </button>
-      <button type="button" class="lang-btn" data-lang="da" aria-label="Dansk" aria-pressed="false">
-        <span class="flag" data-lang="da" aria-hidden="true"></span>
-      </button>
-      <button type="button" class="lang-btn" data-lang="no" aria-label="Norsk" aria-pressed="false">
-        <span class="flag" data-lang="no" aria-hidden="true"></span>
-      </button>
+      ${renderBtn('sv', 'Svenska')}
+      ${renderBtn('en', 'English')}
+      ${renderBtn('da', 'Dansk')}
+      ${renderBtn('no', 'Norsk')}
 
-      <!-- Fallback/select för skärmläsare eller om JS/CSS ej laddar -->
       <label for="lang-select" class="visually-hidden">Language</label>
-      <select id="lang-select" aria-label="Language" class="w-select">
+      <select id="lang-select" aria-label="Language" style="display:none">
         <option value="sv">SV</option>
         <option value="en">EN</option>
         <option value="da">DA</option>
         <option value="no">NO</option>
       </select>
     `;
+
     container.appendChild(wrapper);
 
-    // Koppla klick på flaggor
+    // Hook up events
     wrapper.querySelectorAll('.lang-btn').forEach(btn => {
       btn.addEventListener('click', () => setLanguage(btn.getAttribute('data-lang')));
+      // basic hover/active affordances (inline)
+      btn.addEventListener('mouseenter', () => btn.style.transform = 'translateY(-1px)');
+      btn.addEventListener('mouseleave', () => btn.style.transform = 'none');
     });
 
-    // Koppla fallback-select
     const sel = wrapper.querySelector('#lang-select');
-    if (sel) {
-      sel.addEventListener('change', e => setLanguage(e.target.value));
-    }
+    sel && sel.addEventListener('change', e => setLanguage(e.target.value));
   }
 
-  // -------- Init --------
+  function renderBtn(code, label) {
+    // Uses real <img>, so no CSS background is required.
+    // Make sure you have: /flags/sv.svg, /flags/en.svg, /flags/da.svg, /flags/no.svg
+    return `
+      <button type="button" class="lang-btn" data-lang="${code}"
+              aria-label="${label}" aria-pressed="false"
+              style="background:transparent;border:0;padding:4px;cursor:pointer;display:flex;align-items:center">
+        <img src="/flags/${code}.svg" width="24" height="16" alt="" style="display:block;border-radius:3px"/>
+      </button>
+    `;
+  }
+
+  // ---------- init ----------
   document.addEventListener('DOMContentLoaded', () => {
     ensureSwitcher();
 
     const initialLang = getSavedLang();
-
-    // Sätt initial value på fallback-select om den finns
     const sel = document.getElementById('lang-select');
     if (sel) sel.value = initialLang;
 
-    // Applicera språk direkt
     setLanguage(initialLang);
   });
 
-  // Valfritt: exponera globalt
+  // optional global
   window.i18n = { setLanguage, getSavedLang };
 })();
