@@ -7228,3 +7228,46 @@
 .heading_h2-copy {
   text-align: center;
 }
+/* Visually hidden – för hjälpmedel */
+.visually-hidden {
+  position:absolute !important;
+  height:1px; width:1px;
+  overflow:hidden; clip:rect(1px, 1px, 1px, 1px);
+  white-space:nowrap;
+}
+
+/* Språkväxlare */
+.lang-switcher {
+  display:flex; align-items:center; gap:8px;
+}
+
+.lang-switcher .lang-btn {
+  width:36px; height:24px; padding:0;
+  border:1px solid rgba(0,0,0,.12);
+  background:#fff;
+  border-radius:4px; cursor:pointer;
+  display:inline-flex; align-items:center; justify-content:center;
+  transition:transform .06s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.lang-switcher .lang-btn:hover { transform:translateY(-1px); }
+.lang-switcher .lang-btn.is-active {
+  outline: none;
+  border-color: rgba(0,0,0,.3);
+  box-shadow: 0 0 0 2px rgba(24,119,242,.15);
+}
+
+/* Flaggbild i knappen */
+.lang-switcher .flag {
+  display:block; width:24px; height:16px;
+  background-size:cover; background-position:center; background-repeat:no-repeat;
+  border-radius:2px;
+}
+
+/* Koppla varje språk till sin svg */
+.lang-switcher .flag[data-lang="sv"] { background-image:url("/flags/sv.svg"); }
+.lang-switcher .flag[data-lang="en"] { background-image:url("/flags/en.svg"); }
+.lang-switcher .flag[data-lang="da"] { background-image:url("/flags/da.svg"); }
+.lang-switcher .flag[data-lang="no"] { background-image:url("/flags/no.svg"); }
+
+/* (Valfritt) göm text-dropdown visuellt men behåll för skärmläsare/fallback */
+.lang-switcher select.w-select { display:none; }
