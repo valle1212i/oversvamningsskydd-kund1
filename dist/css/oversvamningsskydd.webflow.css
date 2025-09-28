@@ -7188,3 +7188,26 @@
     height: 180px;
   }
 }
+/* --- Mobile fixes for testimonial slider (.slider-4) --- */
+@media (max-width: 480px) {
+  /* Låt sliden/masken ta höjden av sitt innehåll istället för en låst desktop-höjd */
+  .slider-4.w-slider,
+  .slider-4 .w-slider-mask,
+  .slider-4 .w-slide {
+    height: auto !important;
+  }
+
+  /* Gör bilderna helt responsiva och undvik “intryckta” proportioner */
+  .slider-4 .w-slide img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover; /* harmless här, skyddar om någon container skulle tvinga höjd */
+  }
+
+  /* Säkerställ att navigationsprickar/pilar inte reserverar extra höjd */
+  .slider-4 .w-slider-nav {
+    position: static;
+    margin-top: 8px;
+  }
+}
