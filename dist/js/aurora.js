@@ -123,15 +123,18 @@
     }
   
     function showTyping() {
-      const log = document.getElementById('aurora-log');
-      const indicator = el('div', { class: 'typing', id: 'typing' }, [
-        el('div', { class: 'dot' }),
-        el('div', { class: 'dot' }),
-        el('div', { class: 'dot' })
+      if (document.getElementById('typing')) return; // redan synlig
+      const indicator = el('div', { class: 'a-msg a-bot', id: 'typing' }, [
+        el('div', { class: 'typing' }, [
+          el('div', { class: 'dot' }),
+          el('div', { class: 'dot' }),
+          el('div', { class: 'dot' })
+        ])
       ]);
-      log.appendChild(indicator);
-      log.scrollTop = log.scrollHeight;
+      logEl.appendChild(indicator);
+      logEl.scrollTop = logEl.scrollHeight;
     }
+    
 
     function hideTyping() {
       const t = document.getElementById('typing');
@@ -176,8 +179,11 @@
     }
   
     sendBtn.onclick = send;
-  inputEl.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') send();
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        send();
+      }
   });
   })();
   
