@@ -42,6 +42,15 @@
         padding: 10px 12px; border-bottom: 1px solid #1f2a44;
         font-weight: 700;
       }
+              .aurora-close {
+        float: right;
+        cursor: pointer;
+        font-weight: 700;
+        color: #9ca3af;
+      }
+      .aurora-close:hover {
+        color: #fff;
+      }
       .aurora-log {
         flex: 1; padding: 10px; overflow: auto;
         font-size: 14px;
@@ -99,7 +108,10 @@
     const sendBtn = el('button', { class: 'aurora-send', id: 'aurora-send' }, 'Skicka');
   
     const panel = el('div', { class: 'aurora-panel' }, [
-      el('div', { class: 'aurora-head' }, 'Aurora – Översvämningsskydd'),
+      el('div', { class: 'aurora-head' }, [
+        el('span', {}, 'Aurora – Översvämningsskydd'),
+        el('span', { class: 'aurora-close', id: 'aurora-close' }, '✕')
+      ]),
       logEl,
       el('div', { class: 'aurora-row' }, [ inputEl, sendBtn ])
     ]);
@@ -107,6 +119,10 @@
   
     document.body.appendChild(btn);
     document.body.appendChild(panel);
+
+    document.getElementById('aurora-close').onclick = () => {
+      panel.style.display = 'none';
+    };
   
     // --- Öppna/Stäng panel ---
     btn.onclick = () => {
