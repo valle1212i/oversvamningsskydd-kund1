@@ -1,5 +1,9 @@
 (() => {
-    const API_URL = 'https://aurora-backend-kund-oversvamningsskydd.onrender.com/api/aurora/ask';
+  if (window.__aurora_inited) return;
+  window.__aurora_inited = true;
+
+  const API_URL = 'https://aurora-backend-kund-oversvamningsskydd.onrender.com/api/aurora/ask';
+
 
   
     let history = [];
@@ -67,14 +71,16 @@
   
     // --- Skapa element ---
     const btn = el('button', { class: 'aurora-btn' }, 'Chatta med Aurora support för frågor');
+    const logEl   = el('div', { class: 'aurora-log', id: 'aurora-log' });
+    const inputEl = el('input', { class: 'aurora-in', id: 'aurora-in', placeholder: 'Skriv din fråga…' });
+    const sendBtn = el('button', { class: 'aurora-send', id: 'aurora-send' }, 'Skicka');
+  
     const panel = el('div', { class: 'aurora-panel' }, [
       el('div', { class: 'aurora-head' }, 'Aurora – Översvämningsskydd'),
-      el('div', { class: 'aurora-log', id: 'aurora-log' }),
-      el('div', { class: 'aurora-row' }, [
-        el('input', { class: 'aurora-in', id: 'aurora-in', placeholder: 'Skriv din fråga…' }),
-        el('button', { class: 'aurora-send', id: 'aurora-send' }, 'Skicka')
-      ])
+      logEl,
+      el('div', { class: 'aurora-row' }, [ inputEl, sendBtn ])
     ]);
+  
   
     document.body.appendChild(btn);
     document.body.appendChild(panel);
@@ -82,16 +88,17 @@
     // --- Öppna/Stäng panel ---
     btn.onclick = () => {
       panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
-      if (panel.style.display === 'flex') document.getElementById('aurora-in').focus();
+      if (panel.style.display === 'flex') inputEl.focus();
     };
+  
   
     // --- Chat-logik ---
     function push(type, text) {
-      const log = document.getElementById('aurora-log');
       const bubble = el('div', { class: `a-msg ${type === 'user' ? 'a-user' : 'a-bot'}` }, text);
-      log.appendChild(bubble);
-      log.scrollTop = log.scrollHeight;
+      logEl.appendChild(bubble);
+      logEl.scrollTop = logEl.scrollHeight;
     }
+  
   
     async function send() {
       const input = document.getElementById('aurora-in');
@@ -103,12 +110,25 @@
       try {
         const res = await fetch(API_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
           body: JSON.stringify({ question: q, history })
         });
-        const data = await res.json();
-        const answer = data?.answer || 'Tyvärr, jag saknar ett svar just nu.';
+
+        if (!res.ok) {
+          // Backend 4xx/5xx (t.ex. 500) – visa snällt fel
+          throw new Error(`API error ${res.status}`);
+        }
+
+        let data = {};
+        try {
+          data = await res.json();
+        } catch (_) {
+          // Om backend inte skickar JSON vid fel – undvik extra krascher
+        }
+
+        const answer = (data && data.answer) ? data.answer : 'Tyvärr, jag saknar ett svar just nu.';
         push('bot', answer);
+
   
         history = [...history, { role: 'user', content: q }, { role: 'assistant', content: answer }].slice(-10);
       } catch (e) {
@@ -116,9 +136,9 @@
       }
     }
   
-    document.getElementById('aurora-send').onclick = send;
-    document.getElementById('aurora-in').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') send();
-    });
+    sendBtn.onclick = send;
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') send();
+  });
   })();
   
