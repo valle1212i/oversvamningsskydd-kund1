@@ -235,15 +235,90 @@
       </div>
     </div>
   </div>
-  <h2 class="heading_h2-copy" data-i18n="page.h2.2.o-versva-mningsbarria-r">ÖVERSVÄMNINGSBARRIÄR&nbsp;</h2>
-  <div class="div-block"><img src="images/dameasy.png" loading="lazy" width="609" sizes="(max-width: 767px) 100vw, 608.9931030273438px" alt="" srcset="images/dameasy-p-500.png 500w, images/dameasy-p-800.png 800w, images/dameasy.png 1024w">
-    <h1 class="heading-2"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong data-i18n="page.strong.2.produktbeskrivningdetta-">Produktbeskrivning<br><br>Detta skydd fungerar som första försvarslinje för att hindra vatten från att tränga in genom dörrar och fönster i ditt hem. När översvämningar inträffar är det avgörande att kunna agera snabbt. Detta översvämningsskydd ger dig pålitligt skydd direkt – det kan installeras på under 5 minuter!<br>‍<br>→ Kan enkelt installeras på under 5 minuter<br>→ Ger dig tryggheten att snabbt och smidigt kunna säkra ditt hem vid en nödsituation<br>→Förlängningsstänger gör det möjligt att koppla ihop flera barriärer för att täcka större ytor<br>‍</strong><br><br><br><br>‍</h1>
+  <h2 class="heading_h2-copy" data-i18n="page.h2.2.o-versva-mningsbarria-r">ÖVERSVÄMNINGSBARRIÄR</h2>
+
+<section class="product-hero">
+  <!-- Bild -->
+  <img
+    class="product-img"
+    src="images/dameasy.png"
+    srcset="
+      images/dameasy-p-500.png 500w,
+      images/dameasy-p-800.png 800w,
+      images/dameasy.png 1024w"
+    sizes="(max-width: 767px) 100vw, (min-width: 768px) 50vw"
+    alt="Översvämningsbarriär"
+    loading="lazy"
+  />
+
+  <!-- Högerkolumn: titel, text, bullets, antal & köp -->
+  <div class="product-desc">
+    <h1 class="product-title" data-i18n="floodbarrier.h1">Översvämningsbarriär</h1>
+    <p class="lead" data-i18n="floodbarrier.lead">
+      Första försvarslinjen mot inträngande vatten – snabb och smidig att montera.
+    </p>
+
+    <ul class="product-bullets">
+      <li data-i18n="floodbarrier.li.1">Installera på under 5 minuter</li>
+      <li data-i18n="floodbarrier.li.2">Tryggt skydd för dörrar och fönsteröppningar</li>
+      <li data-i18n="floodbarrier.li.3">Kan länkas ihop med förlängningsstänger för större öppningar</li>
+    </ul>
+
+    <!-- Antal -->
+    <label for="floodbarrier-qty" class="sr-only">Antal</label>
+    <select id="floodbarrier-qty" name="floodbarrier-qty" aria-label="Antal">
+      <option value="">Välj antal</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+    </select>
+    <div id="floodbarrier-error" style="display:none;color:#b91c1c;margin-top:8px;">
+      Välj antal för att fortsätta.
+    </div>
+
+    <!-- Köp-knapp -->
+    <button
+      id="buy-floodbarrier"
+      class="button on-inverse w-button"
+      data-i18n="buy-floodbarrier.button.2.ko-p-nu"
+      disabled
+    >
+      Köp nu
+    </button>
+    <small id="floodbarrier-status" style="margin-left:8px"></small>
+
+    <!-- Info-paneler i samma stil som tidigare -->
+    <div class="product-info" style="margin-top:16px">
+      <div class="info-box">
+        <svg class="info-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 6h11v8H3zM14 9h3l3 3v2h-6zM7 18a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm9 0a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" fill="currentColor"/>
+        </svg>
+        <div>
+          <h3>Leverans</h3>
+          <p>Våra normala leveranstider är 14 dagar.<br>
+          <strong>OBS!</strong> Beställningar lagda på helger skickas tidigast på måndagen efter.<br>
+          Vid förseningar: <a href="mailto:edward@vattentrygg.se">edward@vattentrygg.se</a></p>
+        </div>
+      </div>
+
+      <details class="info-dropdown">
+        <summary>Om Vattentrygg</summary>
+        <p>Trädgårdsgatan 9A, 252 24 Helsingborg. Org.nr 559313-7325.<br>
+          Kontakt: <a href="mailto:edward@vattentrygg.se">edward@vattentrygg.se</a></p>
+      </details>
+
+      <details class="info-dropdown">
+        <summary>Ångerrätt</summary>
+        <p>14 dagars ångerrätt. Maila <a href="mailto:edward@vattentrygg.se">edward@vattentrygg.se</a> för retur.</p>
+      </details>
+
+      <details class="info-dropdown">
+        <summary>Reklamation</summary>
+        <p>Vid fel/skada, kontakta oss. Returfrakt ingår vid godkänd reklamation.</p>
+      </details>
+    </div>
   </div>
-  <div class="button-group is-vertical-stretch">
-    <a href="contact.html" class="button on-inverse w-inline-block">
-      <div data-i18n="page.div.2.ko-p">Köp</div>
-    </a>
-  </div>
+</section>
   <section data-record-id="f74978f6-4bce-926a-dd84-5d4f0b2ae3b0" data-copilot="true" class="section">
     <div class="container">
       <div class="header">
@@ -416,5 +491,25 @@
   <script src="lang-switcher.js" defer></script>
   <script src="js/aurora.js"></script>
   <script src="/scripts/pageview-tracker.js" defer></script>
+  <script>
+    (function () {
+      const qtySel = document.getElementById('floodbarrier-qty');
+      const buyBtn = document.getElementById('buy-floodbarrier');
+      const errEl  = document.getElementById('floodbarrier-error');
+    
+      if (!qtySel || !buyBtn || !errEl) return;
+    
+      function validate() {
+        const q = +qtySel.value || 0;
+        const ok = q > 0;
+        buyBtn.disabled = !ok;
+        errEl.style.display = ok ? 'none' : 'block';
+      }
+    
+      qtySel.addEventListener('change', validate);
+      validate();
+    })();
+    </script>
+    
 </body>
 </html>

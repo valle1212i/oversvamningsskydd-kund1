@@ -7347,3 +7347,110 @@ img.w-richtext-figure, .w-richtext img, img[src*="images/ChatGPT-Image"] {
   height: auto !important;
   max-width: 100% !important;
 }
+/* Grid: bild vänster, text + paneler höger */
+.product-hero {
+  display: grid;
+  grid-template-columns: minmax(280px, 640px) 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+/* Bild */
+.product-img { width:100%; height:auto; border-radius:8px; display:block; }
+
+/* Textkolumn */
+.product-desc .lead { font-size:1.125rem; margin:0 0 12px; }
+.product-bullets { margin:0 0 18px 1.1em; list-style:disc; }
+.product-bullets li { margin:6px 0; }
+
+/* Panelerna hamnar i höger kolumn, under texten */
+.product-info { grid-column:2; grid-row:2; max-width:560px; }
+
+/* Leverans-kort + ikon */
+.info-box {
+  display:flex; gap:12px;
+  border:1px solid #e5e7eb; background:#fff; border-radius:8px;
+  padding:16px; box-shadow:0 1px 2px rgba(0,0,0,.04); margin-bottom:12px;
+}
+.info-icon { width:28px; height:28px; color:#111827; flex:0 0 28px; }
+.info-box h3 { margin:0 0 6px; font-size:1.1rem; }
+.info-box p { margin:0; line-height:1.5; }
+
+/* Dropdowns */
+.info-dropdown { border-top:1px solid #e5e7eb; padding:12px 0; }
+.info-dropdown summary { font-weight:600; font-size:1rem; list-style:none; cursor:pointer; }
+.info-dropdown summary::-webkit-details-marker { display:none; }
+.info-dropdown p { margin:8px 0 0; line-height:1.5; }
+
+/* Responsiv */
+@media (max-width: 768px) {
+  .product-hero { grid-template-columns:1fr; gap:24px; }
+  .product-info { grid-column:1; grid-row:auto; max-width:100%; }
+}
+/* Rubriken på produktsidan – tydligt större */
+.heading_h2-copy {
+  text-align: center;
+  margin: 16px 0 24px;
+  font-weight: 700;
+  letter-spacing: .01em;
+  font-size: clamp(28px, 2.2vw + 16px, 44px);
+}
+
+/* Bas i beskrivningskolumnen */
+.product-desc {
+  color: #1f2937;                /* mörkgrå brödtext */
+  font-size: 1.0625rem;          /* ~17px */
+  line-height: 1.65;
+}
+
+/* Ingressen: lite större + halvfet första rad */
+.product-desc .lead {
+  font-size: 1.125rem;           /* ~18px */
+  line-height: 1.65;
+  margin: 0 0 12px;
+}
+.product-desc .lead strong { font-weight: 600; }
+
+/* Bullets: samma storlek som brödtext, jämn spacing */
+.product-bullets {
+  margin: 0 0 18px 1.25rem;
+  padding: 0;
+  list-style: disc;
+  font-size: 1.0625rem;          /* matchar .product-desc */
+  line-height: 1.6;
+}
+.product-bullets li { margin: .35em 0; }
+
+/* Se till att Webflow inte gör text mindre i listor */
+.product-desc ul li,
+.product-desc ol li { font-size: inherit; }
+
+/* Lite extra luft på desktop mellan bild och text */
+@media (min-width: 992px) {
+  .product-hero { gap: 48px; }
+  .product-desc .w-button { margin-top: 10px; }
+}
+.measurements-title { margin: 12px 0 8px; font-size: 1.05rem; font-weight: 600; }
+.measure-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field span { display:block; margin-bottom:6px; font-size:.95rem; }
+.select { width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; }
+.help { margin-top:8px; font-size:.92rem; color:#6b7280; }
+.error { margin-top:8px; color:#b91c1c; font-weight:600; }
+@media (max-width: 768px){ .measure-grid{ grid-template-columns:1fr; } }
+
+.door-gallery {
+  display: flex;
+  justify-content: center;
+  gap: 40px; /* mellanrum mellan dörrarna */
+  margin: 40px 0;
+  flex-wrap: wrap; /* radbryt om skärmen är liten */
+}
+
+.door-item {
+  text-align: center;
+}
+
+.door-item img {
+  max-width: 150px;
+  height: auto;
+}

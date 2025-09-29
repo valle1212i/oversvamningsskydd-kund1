@@ -235,25 +235,74 @@
       </div>
     </div>
   </div>
-  <h2 class="heading_h2-copy" data-i18n="page.h2.2.woodstock">WOODSTOCK&nbsp;</h2>
-  <div class="div-block"><img src="images/ChatGPT-Image-3-sep.-2025-11_09_57.png" loading="lazy" width="609" sizes="(max-width: 767px) 100vw, 608.9931030273438px" alt="" srcset="images/ChatGPT-Image-3-sep.-2025-11_09_57-p-500.png 500w, images/ChatGPT-Image-3-sep.-2025-11_09_57-p-800.png 800w, images/ChatGPT-Image-3-sep.-2025-11_09_57.png 1024w">
-    <h1 class="heading-2" data-i18n="page.h1.2.produktbeskrivning-valfr"><br><br> &nbsp;&nbsp;&nbsp;&nbsp;Produktbeskrivning &nbsp;<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Valfritt glasMin. bredd: 670mm<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Min höjd: 1750mm<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Max bredd: 1050mm<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Max höjd: 2100mm<br><br>‍<br><br><br><br>‍</h1>
-  </div>
-  <div data-hover="false" data-delay="0" class="w-dropdown" id="qty-dropdown">
-    <div class="w-dropdown-toggle" id="qty-toggle">
-      <div class="w-icon-dropdown-toggle"></div>
-      <div data-i18n="qty-toggle.div.3.antal">Antal</div>
+  <h2 class="heading_h2-copy" data-i18n="page.h2.2.woodstock">WOODSTOCK</h2>
+
+  <section class="product-hero">
+    <!-- Bild -->
+    <img
+      class="product-img"
+      src="images/ChatGPT-Image-3-sep.-2025-11_09_57.png"
+      srcset="
+        images/ChatGPT-Image-3-sep.-2025-11_09_57-p-500.png 500w,
+        images/ChatGPT-Image-3-sep.-2025-11_09_57-p-800.png 800w,
+        images/ChatGPT-Image-3-sep.-2025-11_09_57.png 1024w"
+      sizes="(max-width: 767px) 100vw, (min-width: 768px) 50vw"
+      alt="Woodstock dörr"
+      loading="lazy"
+    />
+  
+    <!-- Beskrivning + val -->
+    <div class="product-desc">
+      <h1 class="product-title" data-i18n="woodstock.h1">Woodstock – kompositdörr</h1>
+      <p class="lead" data-i18n="woodstock.lead">
+        Välj mått och antal. Valfritt glas.
+      </p>
+  
+      <ul class="product-bullets">
+        <li>Robust konstruktion med klassisk design</li>
+        <li>Integrerat översvämningsskydd</li>
+        <li>Kan skräddarsys inom angivna mått</li>
+      </ul>
+  
+      <!-- Mått -->
+      <div
+        class="measurements"
+        data-width-min="1200"
+        data-width-max="1800"
+        data-height-min="1750"
+        data-height-max="2100"
+      >
+        <label for="woodstock-width">Välj bredd (1200–1800 mm):</label>
+        <select id="woodstock-width" name="woodstock-width"></select>
+  
+        <label for="woodstock-height">Välj höjd (1750–2100 mm):</label>
+        <select id="woodstock-height" name="woodstock-height"></select>
+  
+        <label for="woodstock-qty">Antal:</label>
+        <select id="woodstock-qty" name="woodstock-qty">
+          <option value="">Välj antal</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+        </select>
+  
+        <div id="woodstock-measure-error" style="display:none;color:#b91c1c;margin-top:8px;">
+          Välj giltig bredd, höjd och antal.
+        </div>
+      </div>
+  
+      <!-- Köp-knapp -->
+      <button
+        id="buy-woodstock"
+        class="button on-inverse w-button"
+        data-i18n="buy-woodstock.button.2.ko-p-nu"
+        disabled
+      >
+        Köp nu
+      </button>
+      <small id="woodstock-status" style="margin-left:8px"></small>
     </div>
-    <nav class="w-dropdown-list" id="qty-list">
-      <a href="#" class="w-dropdown-link" data-i18n="qty-list.link.2.1">1</a>
-      <a href="#" class="w-dropdown-link" data-i18n="qty-list.link.3.2">2</a>
-      <a href="#" class="w-dropdown-link" data-i18n="qty-list.link.4.3">3</a>
-    </nav>
-  </div>  
-  <div class="button-group is-vertical-stretch">
-    <button id="buy-woodstock" class="button on-inverse w-button" data-i18n="buy-woodstock.button.2.ko-p-nu">Köp nu</button>
-    <small id="pay-status" style="margin-left:8px"></small>
-  </div>  
+  </section>   
   <footer class="footer">
     <div class="container">
       <div class="w-layout-grid grid_2-col margin-bottom_large">
@@ -347,6 +396,50 @@
   <script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=68b5e4fe195b2b7b75214b94" type="text/javascript" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
   <script src="js/webflow.js" type="text/javascript"></script>
   <script src="js/aurora.js"></script>
+  <script>
+    (function () {
+      const wrap = document.querySelector('.measurements[data-width-min][data-height-min]');
+      if (!wrap) return;
+    
+      const wMin = +wrap.dataset.widthMin,  wMax = +wrap.dataset.widthMax;
+      const hMin = +wrap.dataset.heightMin, hMax = +wrap.dataset.heightMax;
+    
+      const widthSel  = document.getElementById('woodstock-width');
+      const heightSel = document.getElementById('woodstock-height');
+      const qtySel    = document.getElementById('woodstock-qty');
+      const buyBtn    = document.getElementById('buy-woodstock');
+      const errEl     = document.getElementById('woodstock-measure-error');
+    
+      function fillSelect(sel, min, max, step = 10) {
+        sel.innerHTML = '<option value="">Välj…</option>';
+        for (let v = min; v <= max; v += step) {
+          const o = document.createElement('option');
+          o.value = String(v);
+          o.textContent = v + ' mm';
+          sel.appendChild(o);
+        }
+      }
+    
+      function validate() {
+        const w = +widthSel.value || 0;
+        const h = +heightSel.value || 0;
+        const q = +qtySel.value   || 0;
+        const ok = w >= wMin && w <= wMax && h >= hMin && h <= hMax && q > 0;
+    
+        buyBtn.disabled = !ok;
+        errEl.style.display = ok ? 'none' : 'block';
+      }
+    
+      fillSelect(widthSel,  wMin, wMax, 10);
+      fillSelect(heightSel, hMin, hMax, 10);
+    
+      widthSel.addEventListener('change', validate);
+      heightSel.addEventListener('change', validate);
+      qtySel.addEventListener('change', validate);
+    
+      validate();
+    })();
+    </script>    
   <script>
     (function(){
       // ✅ Din riktiga Render-backend (samma som övriga sidor)
