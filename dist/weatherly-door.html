@@ -1,6 +1,7 @@
+<!DOCTYPE html>
 <!DOCTYPE html><html data-wf-page="68b99afd9034bebe3acd68bc" data-wf-site="68b5e4fe195b2b7b75214b94"><head>
   <meta charset="utf-8">
-  <title>Weatherlydorr</title>
+  <title data-i18n="page.title.2.weatherly-door">Weatherlydorr</title>
   <meta content="WEATHERLY DOOR" property="og:title">
   <meta content="WEATHERLY DOOR" property="twitter:title">
   <meta content="width=device-width, initial-scale=1" name="viewport">
@@ -238,17 +239,10 @@
 
 <section class="product-hero">
   <!-- Bild vänster -->
-  <img
-    class="product-img"
-    src="images/ChatGPT-Image-3-sep.-2025-10_03_57.png"
-    srcset="
+  <img class="product-img" src="images/ChatGPT-Image-3-sep.-2025-10_03_57.png" srcset="
       images/ChatGPT-Image-3-sep.-2025-10_03_57-p-500.png 500w,
       images/ChatGPT-Image-3-sep.-2025-10_03_57-p-800.png 800w,
-      images/ChatGPT-Image-3-sep.-2025-10_03_57.png 1024w"
-    sizes="(max-width: 767px) 100vw, (min-width: 768px) 50vw"
-    alt="Weatherly dörr"
-    loading="lazy"
-  />
+      images/ChatGPT-Image-3-sep.-2025-10_03_57.png 1024w" sizes="(max-width: 767px) 100vw, (min-width: 768px) 50vw" alt="Weatherly dörr" loading="lazy">
 
   <!-- Text + val höger -->
   <div class="product-desc">
@@ -258,44 +252,33 @@
     </p>
 
     <ul class="product-bullets">
-      <li>Ser ut och fungerar som en vanlig ytterdörr</li>
-      <li>Integrerat skydd mot vatteninträngning</li>
-      <li>Kan skräddarsys inom angivna mått</li>
+      <li data-i18n="section.li.2.ser-ut-och-fungerar-som-">Ser ut och fungerar som en vanlig ytterdörr</li>
+      <li data-i18n="section.li.3.integrerat-skydd-mot-vat">Integrerat skydd mot vatteninträngning</li>
+      <li data-i18n="section.li.4.kan-skra-ddarsys-inom-an">Kan skräddarsys inom angivna mått</li>
     </ul>
 
     <!-- Mått-väljare (skrivs auto via JS) -->
-    <div
-      class="measurements"
-      data-width-min="1200"
-      data-width-max="1800"
-      data-height-min="1750"
-      data-height-max="2100"
-    >
-      <label for="weatherly-width">Välj bredd (1200–1800 mm):</label>
+    <div class="measurements" data-width-min="1200" data-width-max="1800" data-height-min="1750" data-height-max="2100">
+      <label for="weatherly-width" data-i18n="section.label.2.va-lj-bredd-1200-1800-mm">Välj bredd (1200–1800 mm):</label>
       <select id="weatherly-width" name="weatherly-width"></select>
 
-      <label for="weatherly-height">Välj höjd (1750–2100 mm):</label>
+      <label for="weatherly-height" data-i18n="section.label.3.va-lj-ho-jd-1750-2100-mm">Välj höjd (1750–2100 mm):</label>
       <select id="weatherly-height" name="weatherly-height"></select>
 
-      <label for="weatherly-qty">Antal:</label>
+      <label for="weatherly-qty" data-i18n="section.label.4.antal">Antal:</label>
       <select id="weatherly-qty" name="weatherly-qty">
-        <option value="">Välj antal</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
+        <option value="" data-i18n="weatherly-qty.option.2.va-lj-antal">Välj antal</option>
+        <option value="1" data-i18n="weatherly-qty.option.3.1">1</option>
+        <option value="2" data-i18n="weatherly-qty.option.4.2">2</option>
+        <option value="3" data-i18n="weatherly-qty.option.5.3">3</option>
       </select>
 
-      <div id="weatherly-measure-error" style="display:none;color:#b91c1c;margin-top:8px;">
+      <div id="weatherly-measure-error" style="display:none;color:#b91c1c;margin-top:8px;" data-i18n="weatherly-measure-error.div.2.va-lj-giltig-bredd-ho-jd">
         Välj giltig bredd, höjd och antal.
       </div>
     </div>
 
-    <button
-      id="buy-weatherly"
-      class="button on-inverse w-button"
-      data-i18n="buy-weatherly.button.2.ko-p-nu"
-      disabled
-    >
+    <button id="buy-weatherly" class="button on-inverse w-button" data-i18n="buy-weatherly.button.2.ko-p-nu" disabled="">
       Köp nu
     </button>
     <small id="weatherly-status" style="margin-left:8px"></small>
@@ -546,7 +529,7 @@
     })();
     </script>
     
-<script src="lang-switcher.js" defer></script>
-<script src="/scripts/pageview-tracker.js" defer></script>
-</body>
-</html>
+<script src="lang-switcher.js" defer=""></script>
+<script src="/scripts/pageview-tracker.js" defer=""></script>
+
+</body></html>
