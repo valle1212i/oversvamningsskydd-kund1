@@ -1328,5 +1328,11 @@
   "w-node-_080ab5f1-a942-ec51-aefc-8743693e61b1-b79326a9.strong.2.tvist-och-lagval": "Dispute and Choice of Law",
   "w-node-_080ab5f1-a942-ec51-aefc-8743693e61b1-b79326a9.em.2.http-ec-europa-eu-consum": "http://ec.europa.eu/consumers/odr<br><br>‍",
   "w-node-a1262d2f-8cd2-1596-8d06-40c9def4af57-def4af4f.h1.2.sa-kra-din-framtid-nu": "Secure your future now",
-  "w-node-_9e74f279-4499-458c-31a6-504f364849c8-def4af4f.button.2.kontakta-oss": "Contact us"
+  "w-node-_9e74f279-4499-458c-31a6-504f364849c8-def4af4f.button.2.kontakta-oss": "Contact us",
+  "aurora.button.text": "Chat with Aurora support for questions",
+  "aurora.input.placeholder": "Type your question…",
+  "aurora.send.button": "Send",
+  "aurora.header.title": "Aurora – Flood Protection",
+  "aurora.no.answer": "Sorry, I don't have an answer right now.",
+  "aurora.error.message": "Technical error – please try again in a moment."
 }

@@ -1180,5 +1180,11 @@
   "wf-form-Test-Form.submit.2.please-wait": "Please wait...",
   "wf-form-Test-Form.submit.2.submit": "Submit",
   "woodstock.h1": "Woodstock – kompositdörr",
-  "woodstock.lead": "Välj mått och antal. Valfritt glas."
+  "woodstock.lead": "Välj mått och antal. Valfritt glas.",
+  "aurora.button.text": "Chatta med Aurora support för frågor",
+  "aurora.input.placeholder": "Skriv din fråga…",
+  "aurora.send.button": "Skicka",
+  "aurora.header.title": "Aurora – Översvämningsskydd",
+  "aurora.no.answer": "Tyvärr, jag saknar ett svar just nu.",
+  "aurora.error.message": "Tekniskt fel – försök igen om en liten stund."
 }

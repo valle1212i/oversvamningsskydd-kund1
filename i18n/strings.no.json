@@ -1329,5 +1329,11 @@
   "w-node-_080ab5f1-a942-ec51-aefc-8743693e61b1-b79326a9.strong.2.tvist-och-lagval": "Tvist og lovvalg",
   "w-node-_080ab5f1-a942-ec51-aefc-8743693e61b1-b79326a9.em.2.http-ec-europa-eu-consum": "http://ec.europa.eu/consumers/odr<br><br>‍",
   "w-node-a1262d2f-8cd2-1596-8d06-40c9def4af57-def4af4f.h1.2.sa-kra-din-framtid-nu": "Sikre din fremtid nå",
-  "w-node-_9e74f279-4499-458c-31a6-504f364849c8-def4af4f.button.2.kontakta-oss": "Kontakt oss"
+  "w-node-_9e74f279-4499-458c-31a6-504f364849c8-def4af4f.button.2.kontakta-oss": "Kontakt oss",
+  "aurora.button.text": "Chat med Aurora support for spørsmål",
+  "aurora.input.placeholder": "Skriv spørsmålet ditt…",
+  "aurora.send.button": "Send",
+  "aurora.header.title": "Aurora – Oversvømmelsesbeskyttelse",
+  "aurora.no.answer": "Beklager, jeg har ikke et svar akkurat nå.",
+  "aurora.error.message": "Teknisk feil – prøv igjen om et øyeblikk."
 }

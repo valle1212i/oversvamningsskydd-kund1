@@ -3,10 +3,59 @@
   window.__aurora_inited = true;
 
   const API_URL = 'https://aurora-backend-kund-oversvamningsskydd.onrender.com/api/aurora/ask';
-
-
   
-    let history = [];
+  // i18n support
+  let currentStrings = {};
+  let currentLang = 'sv';
+
+  // Load translation strings
+  async function loadAuroraStrings(lang) {
+    try {
+      const url = `/i18n/${lang}/strings.json`;
+      const res = await fetch(url, { cache: 'no-cache' });
+      if (!res.ok) throw new Error(`Could not load ${url}`);
+      return res.json();
+    } catch (e) {
+      console.error('[Aurora i18n] Failed to load strings for', lang, e);
+      return {};
+    }
+  }
+
+  // Update Aurora widget text
+  function updateAuroraText() {
+    const btn = document.querySelector('.aurora-btn');
+    const inputEl = document.getElementById('aurora-in');
+    const sendBtn = document.getElementById('aurora-send');
+    const headerEl = document.querySelector('.aurora-head span:first-child');
+    
+    if (btn && currentStrings['aurora.button.text']) {
+      btn.textContent = currentStrings['aurora.button.text'];
+    }
+    if (inputEl && currentStrings['aurora.input.placeholder']) {
+      inputEl.placeholder = currentStrings['aurora.input.placeholder'];
+    }
+    if (sendBtn && currentStrings['aurora.send.button']) {
+      sendBtn.textContent = currentStrings['aurora.send.button'];
+    }
+    if (headerEl && currentStrings['aurora.header.title']) {
+      headerEl.textContent = currentStrings['aurora.header.title'];
+    }
+  }
+
+  // Listen for language changes
+  document.addEventListener('i18n:changed', async (e) => {
+    currentLang = e.detail.lang;
+    currentStrings = await loadAuroraStrings(currentLang);
+    updateAuroraText();
+  });
+
+  // Initialize with current language
+  async function initAuroraI18n() {
+    currentLang = window.i18n?.getSavedLang() || 'sv';
+    currentStrings = await loadAuroraStrings(currentLang);
+  }
+
+  let history = [];
   
     function el(tag, attrs = {}, children = []) {
       const e = document.createElement(tag);
@@ -182,7 +231,7 @@
         } catch (_) {}
 
         hideTyping();
-        const answer = (data && data.answer) ? data.answer : 'Tyvärr, jag saknar ett svar just nu.';
+        const answer = (data && data.answer) ? data.answer : (currentStrings['aurora.no.answer'] || 'Tyvärr, jag saknar ett svar just nu.');
         push('bot', answer);
 
 
@@ -190,7 +239,7 @@
         history = [...history, { role: 'user', content: q }, { role: 'assistant', content: answer }].slice(-10);
       } catch (e) {
         hideTyping();
-        push('bot', 'Tekniskt fel – försök igen om en liten stund.');
+        push('bot', currentStrings['aurora.error.message'] || 'Tekniskt fel – försök igen om en liten stund.');
       }
     }
   
@@ -200,6 +249,11 @@
         e.preventDefault();
         send();
       }
+  });
+
+  // Initialize i18n for Aurora
+  initAuroraI18n().then(() => {
+    updateAuroraText();
   });
   })();
   
