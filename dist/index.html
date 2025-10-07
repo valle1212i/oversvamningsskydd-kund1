@@ -730,7 +730,7 @@
               <div id="w-node-c577dcce-c371-fa54-ead7-aa6a20a090eb-20a090ae" class="w-node-_1101c474-cf2c-f596-62c2-ea0387e31903-75214bc4"><label for="message-4" class="input_label" data-i18n="w-node-c577dcce-c371-fa54-ead7-aa6a20a090eb-20a090ae.label.2.meddelande">Meddelande</label><textarea id="message-4" name="message-4" maxlength="5000" data-name="Message 4" placeholder="Skriv ditt meddelande här..." class="input_field input_text-area w-input" data-i18n-attr="placeholder:message-4.textarea.2.skriv-ditt-meddelande-ha"></textarea></div>
               <div id="w-node-c577dcce-c371-fa54-ead7-aa6a20a090ef-20a090ae" class="w-node-_1101c474-cf2c-f596-62c2-ea0387e3190c-75214bc4"><label class="w-checkbox checkbox margin-bottom_none">
                   <div class="checkbox_toggle"></div>
-                  <div class="w-checkbox-input w-checkbox-input--inputType-custom inline-input-0"></div><input type="checkbox" name="agreement-checkbox-4" id="agreement-checkbox-4" data-name="Agreement Checkbox 4" required="" style="opacity:0;position:absolute;z-index:-1"><span for="agreement-checkbox-4" class="checkbox_label w-form-label">Jag godkänner <a href="#" data-i18n="w-node-c577dcce-c371-fa54-ead7-aa6a20a090ef-20a090ae.link.2.integritetspolicyn">integritetspolicyn</a>.</span>
+                  <div class="w-checkbox-input w-checkbox-input--inputType-custom inline-input-0"></div><input type="checkbox" name="agreement-checkbox-4" id="agreement-checkbox-4" data-name="Agreement Checkbox 4" required="" style="opacity:0;position:absolute;z-index:-1"><span for="agreement-checkbox-4" class="checkbox_label w-form-label">Jag godkänner <a href="/faq.html" data-i18n="w-node-c577dcce-c371-fa54-ead7-aa6a20a090ef-20a090ae.link.2.integritetspolicyn">integritetspolicyn</a>.</span>
                 </label></div>
               <div id="w-node-c577dcce-c371-fa54-ead7-aa6a20a090f7-20a090ae" class="w-node-_1101c474-cf2c-f596-62c2-ea0387e3190e-75214bc4"><input type="submit" data-wait="Ett ögonblick.." class="button width_100percent w-button" value="Skicka Meddelande" data-i18n-attr="value:w-node-c577dcce-c371-fa54-ead7-aa6a20a090f7-20a090ae.submit.2.skicka-meddelande; data-wait:w-node-c577dcce-c371-fa54-ead7-aa6a20a090f7-20a090ae.submit.2.ett-o-gonblick"></div>
             </div>
@@ -904,5 +904,96 @@
   <script src="js/aurora.js"></script>
   <script src="lang-switcher.js" defer=""></script>
   <script src="/scripts/pageview-tracker.js" defer=""></script>
+
+  <!-- Contact Form Handler -->
+  <script>
+    (function() {
+      // ✅ Bind bara EN gång även om skriptet råkar köras två gånger
+      if (window.__vtgContactBoundIndex) return;
+      window.__vtgContactBoundIndex = true;
+
+      const API_BASE_PORTAL = 'https://source-database.onrender.com';
+
+      const hostname = location.hostname.toLowerCase();
+      const tenant = hostname.replace(/^www\./, '').split('.')[0] || 'vattentrygg';
+
+      const form = document.getElementById('wf-form-contact-form');
+      if (!form) return;
+
+      const successEl = form.parentElement.querySelector('.w-form-done');
+      const errorEl   = form.parentElement.querySelector('.w-form-fail');
+      const submitBtn = form.querySelector('input[type="submit"]');
+
+      // säkerställ default dolda
+      if (successEl) successEl.style.display = 'none';
+      if (errorEl)   errorEl.style.display   = 'none';
+
+      function show(el){ if (el) el.style.display = 'block'; }
+      function hide(el){ if (el) el.style.display = 'none'; }
+      function disable(b){ if (b) { b.disabled = true;  b.value = 'Skickar...'; } }
+      function enable(b){ if (b) { b.disabled = false; b.value = 'Skicka Meddelande'; } }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hide(successEl); hide(errorEl);
+        disable(submitBtn);
+
+        const firstName = document.getElementById('F-rnamn')?.value?.trim() || '';
+        const lastName = document.getElementById('last-name-2')?.value?.trim() || '';
+        const email = document.getElementById('email-3')?.value?.trim() || '';
+        const phone = document.getElementById('phone-number-2')?.value?.trim() || '';
+        const projectType = document.getElementById('field-2')?.value || '';
+        const message = document.getElementById('message-4')?.value?.trim() || '';
+        const consent = document.getElementById('agreement-checkbox-4')?.checked || false;
+
+        if (!firstName || !email || !message || !consent) {
+          hide(successEl); show(errorEl); enable(submitBtn); return;
+        }
+
+        const portalPayload = {
+          name: `${firstName} ${lastName}`.trim(),
+          email,
+          phone,
+          message,
+          projectType,
+          subject: 'Kontaktformulär från index.html',
+          consent,
+          path: location.pathname,
+          ref: document.referrer || null,
+          ua: navigator.userAgent,
+          createdAt: new Date().toISOString()
+        };
+
+        try {
+          const portalRes = await fetch(`${API_BASE_PORTAL}/api/messages`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'X-Tenant': tenant
+            },
+            body: JSON.stringify(portalPayload),
+            credentials: 'omit',
+            cache: 'no-store',
+            mode: 'cors'
+          });
+
+          if (portalRes.ok) {
+            hide(errorEl); show(successEl);
+            form.reset();
+            enable(submitBtn);
+            return;
+          } else {
+            hide(successEl); show(errorEl);
+            enable(submitBtn);
+          }
+        } catch (err) {
+          console.error('[Contact Form] Error:', err);
+          hide(successEl); show(errorEl);
+          enable(submitBtn);
+        }
+      });
+    })();
+  </script>
 
 </body></html>
