@@ -55,6 +55,52 @@
     currentStrings = await loadAuroraStrings(currentLang);
   }
 
+  // Simple language detection based on common words and patterns
+  function detectLanguage(text) {
+    const lowerText = text.toLowerCase();
+    
+    // English indicators
+    const englishWords = ['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'can', 'may', 'might', 'must', 'shall'];
+    const englishCount = englishWords.filter(word => lowerText.includes(word)).length;
+    
+    // Danish indicators
+    const danishWords = ['og', 'eller', 'men', 'i', 'på', 'til', 'for', 'af', 'med', 'ved', 'er', 'var', 'har', 'havde', 'gør', 'gør', 'gjorde', 'vil', 'ville', 'kunne', 'skulle', 'kan', 'må', 'måtte', 'skal'];
+    const danishCount = danishWords.filter(word => lowerText.includes(word)).length;
+    
+    // Norwegian indicators
+    const norwegianWords = ['og', 'eller', 'men', 'i', 'på', 'til', 'for', 'av', 'med', 'ved', 'er', 'var', 'har', 'hadde', 'gjør', 'gjør', 'gjorde', 'vil', 'ville', 'kunne', 'skulle', 'kan', 'må', 'måtte', 'skal'];
+    const norwegianCount = norwegianWords.filter(word => lowerText.includes(word)).length;
+    
+    // Swedish indicators
+    const swedishWords = ['och', 'eller', 'men', 'i', 'på', 'till', 'för', 'av', 'med', 'vid', 'är', 'var', 'har', 'hade', 'gör', 'gör', 'gjorde', 'vill', 'ville', 'kunde', 'skulle', 'kan', 'må', 'måtte', 'ska'];
+    const swedishCount = swedishWords.filter(word => lowerText.includes(word)).length;
+    
+    // Count scores
+    const scores = {
+      'en': englishCount,
+      'da': danishCount,
+      'no': norwegianCount,
+      'sv': swedishCount
+    };
+    
+    // Find language with highest score
+    const detectedLang = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
+    
+    // If no clear winner (score 0), default to current site language
+    return scores[detectedLang] > 0 ? detectedLang : currentLang;
+  }
+
+  // Get language instruction for AI
+  function getLanguageInstruction(lang) {
+    const instructions = {
+      'sv': 'Svara på svenska.',
+      'en': 'Respond in English.',
+      'da': 'Svar på dansk.',
+      'no': 'Svar på norsk.'
+    };
+    return instructions[lang] || instructions['sv'];
+  }
+
   let history = [];
   
     function el(tag, attrs = {}, children = []) {
@@ -215,10 +261,21 @@
   
       try {
         showTyping();
+        
+        // Detect language of user input
+        const detectedLang = detectLanguage(q);
+        const languageInstruction = getLanguageInstruction(detectedLang);
+        
+        // Debug: log detected language
+        console.log('[Aurora] Detected language:', detectedLang, 'for input:', q);
+        
+        // Add language instruction to the question
+        const enhancedQuestion = `${languageInstruction} ${q}`;
+        
         const res = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ question: q, history })
+          body: JSON.stringify({ question: enhancedQuestion, history })
         });
 
         if (!res.ok) {
