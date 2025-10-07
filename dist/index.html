@@ -53,6 +53,29 @@
       line-height: 1.1;
     }
   }
+  
+  /* Mobile navigation layout */
+  .nav_language-selector {
+    margin-top: 8px;
+  }
+  
+  @media (max-width: 767px) {
+    .button-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .nav_mobile-menu-button {
+      margin-left: 0;
+    }
+    
+    .nav_language-selector {
+      margin-top: 12px;
+      display: flex;
+      justify-content: center;
+    }
+  }
 </style>
 
 </head>
@@ -372,8 +395,19 @@
           <a href="contact.html" class="button w-inline-block">
             <div class="button_label" data-i18n="nav.buttonLabel.2.fa-en-offert">Få en offert</div>
           </a>
+          <div class="nav_mobile-menu-button w-nav-button">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <g class="nc-icon-wrapper" stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.5" fill="none" stroke="currentColor" stroke-miterlimit="10">
+                  <line x1="1" y1="12" x2="23" y2="12" stroke="currentColor"></line>
+                  <line x1="1" y1="5" x2="23" y2="5"></line>
+                  <line x1="1" y1="19" x2="23" y2="19"></line>
+                </g>
+              </svg></div>
+          </div>
+        </div>
+        <div class="nav_language-selector">
           <div id="lang-mount"></div>
-</div>
+        </div>
           
           <!-- dolda knappar som triggas av JS -->
           <button type="button" hidden="" data-lang-switch="sv"></button>
@@ -382,15 +416,6 @@
           <button type="button" hidden="" data-lang-switch="no"></button>
           
         </div>
-      </div>
-      <div class="nav_mobile-menu-button w-nav-button">
-        <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-            <g class="nc-icon-wrapper" stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.5" fill="none" stroke="currentColor" stroke-miterlimit="10">
-              <line x1="1" y1="12" x2="23" y2="12" stroke="currentColor"></line>
-              <line x1="1" y1="5" x2="23" y2="5"></line>
-              <line x1="1" y1="19" x2="23" y2="19"></line>
-            </g>
-          </svg></div>
       </div>
     </div>
   
