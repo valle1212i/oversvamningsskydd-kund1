@@ -246,6 +246,31 @@ app.post('/api/visit', async (req, res) => {
     };
 
     await fs.appendFile(join(__dirname, 'visits.log'), JSON.stringify(entry) + '\n', 'utf8');
+
+    // Forward to portal (non-blocking/best-effort)
+    try {
+      const portalUrl = process.env.PORTAL_PAGEVIEWS_URL || 'https://source-database.onrender.com/api/pageviews/track';
+      const portalToken = process.env.PORTAL_INBOUND_TOKEN || process.env.PORTAL_PAGEVIEWS_TOKEN || '';
+      // Map minimal fields to portal schema; server adds IP via request
+      const body = {
+        site: 'vattentrygg.se',
+        url: safePath || '/',
+        referrer: safeRef,
+        title: null,
+        ts: Date.now(),
+        viewport: null,
+        ua: safeUa,
+        consent: true,
+        ip_hash: ipHash
+      };
+      // Fire-and-forget; no await to avoid delaying response
+      postJsonWithTimeout(portalUrl, {
+        headers: portalToken ? { Authorization: `Bearer ${portalToken}` } : {},
+        body,
+        timeoutMs: 5000,
+      }).catch(()=>{});
+    } catch (_) {}
+
     return res.status(204).end();
   } catch (err) {
     console.error('visit error:', err);

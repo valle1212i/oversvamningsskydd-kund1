@@ -82,9 +82,9 @@
     on: (evt, fn) => document.addEventListener(evt, fn, {once:false})
   };
 
-  // Visa banner om inget val finns
+  // Alltid visa banner tills användaren gör ett val (tvingande klick)
   const banner = $('#cmp-banner');
-  if (!saved) banner.hidden = false;
+  banner.hidden = false;
 
   // UI → state
   const syncFromUI = () => {
@@ -118,8 +118,7 @@
     syncFromUI(); persist(); close(); fire();
   });
 
-  // Om lagrat samtycke fanns vid sidladdning → trigga direkt (utan banner)
-  if (saved) fire();
+  // Trigga endast events efter aktivt val; ingen auto-fire
 
   // Hjälpare för conditionally loaded scripts
   window.loadScriptOnce = function(src, id){
