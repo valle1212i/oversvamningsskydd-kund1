@@ -2,6 +2,8 @@
   if (window.__aurora_inited) return;
   window.__aurora_inited = true;
 
+  console.log('[Aurora] Initializing...');
+
   const API_URL = 'https://aurora-backend-kund-oversvamningsskydd.onrender.com/api/aurora/ask';
   
   // i18n support
@@ -214,6 +216,8 @@
   
     document.body.appendChild(btn);
     document.body.appendChild(panel);
+    
+    console.log('[Aurora] Widget elements created and added to DOM');
 
     document.getElementById('aurora-close').onclick = () => {
       panel.style.display = 'none';
@@ -296,6 +300,7 @@
         history = [...history, { role: 'user', content: q }, { role: 'assistant', content: answer }].slice(-10);
       } catch (e) {
         hideTyping();
+        console.error('[Aurora] Send error:', e);
         push('bot', currentStrings['aurora.error.message'] || 'Tekniskt fel – försök igen om en liten stund.');
       }
     }
@@ -308,9 +313,35 @@
       }
   });
 
+  // Test API connectivity
+  async function testAPI() {
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: 'test', history: [] })
+      });
+      console.log('[Aurora] API test response status:', response.status);
+    } catch (error) {
+      console.error('[Aurora] API test failed:', error);
+    }
+  }
+
   // Initialize i18n for Aurora
   initAuroraI18n().then(() => {
     updateAuroraText();
+    console.log('[Aurora] Initialization complete');
+    // Test API after initialization
+    testAPI();
+  }).catch((error) => {
+    console.error('[Aurora] Initialization failed:', error);
   });
+
+  // Add error handling for the entire script
+  try {
+    console.log('[Aurora] Script loaded successfully');
+  } catch (error) {
+    console.error('[Aurora] Script error:', error);
+  }
   })();
   
