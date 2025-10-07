@@ -29,6 +29,30 @@
   .cmp-btn.secondary{background:#1b244d;color:#fff}
   .cmp-link{color:#a6b7ff;text-decoration:underline}
   @media (max-width:720px){#cmp-inner{grid-template-columns:1fr;gap:12px}}
+  
+  /* Mobile responsive text for hero heading */
+  .mobile-responsive-text {
+    word-wrap: break-word;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    -ms-hyphens: auto;
+    line-height: 1.2;
+  }
+  
+  @media (max-width: 768px) {
+    .mobile-responsive-text {
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      line-height: 1.1;
+      word-break: break-word;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .mobile-responsive-text {
+      font-size: clamp(1.2rem, 5vw, 2rem);
+      line-height: 1.1;
+    }
+  }
 </style>
 
 </head>
@@ -375,7 +399,7 @@
       <div class="w-layout-grid grid_2-col tablet-1-col gap-xxlarge">
         <div class="image-ratio_1x1"><img class="image_cover" src="images/vattentrygglogo.png" width="576" height="576" alt="image of water heater installation (for a plumbing service)" sizes="(max-width: 767px) 100vw, 575.9896240234375px" data-aisg-image-id="6dc6e28a-0a1a-4a4a-8256-9853a4f17a14" loading="lazy" srcset="images/vattentrygglogo.png"></div>
         <div id="w-node-_85b6655c-7c4a-e9e3-9ce9-a5af31fcf1c3-31fcf1be" class="header margin-bottom_none w-node-a4ab0c7c-6789-6982-f05d-186c0c3258cc-75214bc4">
-          <h1 class="heading_h1" data-i18n="w-node-_85b6655c-7c4a-e9e3-9ce9-a5af31fcf1c3-31fcf1be.h1.2.skydda-din-fastighet-fo-">Skydda din fastighet. Förhindra <br>översvämnings<br>skador.</h1>
+          <h1 class="heading_h1 mobile-responsive-text" data-i18n="w-node-_85b6655c-7c4a-e9e3-9ce9-a5af31fcf1c3-31fcf1be.h1.2.skydda-din-fastighet-fo-">Skydda din fastighet. Förhindra översvämningsskador.</h1>
           <p class="subheading" data-i18n="w-node-_85b6655c-7c4a-e9e3-9ce9-a5af31fcf1c3-31fcf1be.p.2.installera-bepro-vade-o-">Installera beprövade översvämningsbarriärer och system för att minska reparationskostnader, sänka försäkringspremier och skydda din fastighet eller verksamhet mot vattenskador.</p>
           <div class="button-group">
             <a href="products.html" class="button w-button" data-i18n="w-node-_85b6655c-7c4a-e9e3-9ce9-a5af31fcf1c3-31fcf1be.button.2.kom-iga-ng">Kom igång</a>
