@@ -87,9 +87,19 @@ app.use('/api/payouts', payoutsRoutes);
 
 
 // ----------------------------------------------------
-// OpenAI
+// OpenAI (lazy initialization)
 // ----------------------------------------------------
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+let openaiInstance = null;
+
+function getOpenAI() {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not configured');
+  }
+  if (!openaiInstance) {
+    openaiInstance = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openaiInstance;
+}
 
 // ----------------------------------------------------
 // Kontextbygge för Aurora
@@ -179,10 +189,21 @@ async function postJsonWithTimeout(url, { headers = {}, body = {}, timeoutMs = 8
 // ----------------------------------------------------
 app.post('/api/aurora/ask', async (req, res) => {
   try {
+    // Guard: kontrollera om OpenAI API-nyckel finns
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'OpenAI service is not configured. Please set OPENAI_API_KEY environment variable.' 
+      });
+    }
+
     const { question, history = [] } = req.body || {};
     if (!question) {
       return res.status(400).json({ success: false, message: 'question required' });
     }
+
+    // Lazy-initialize OpenAI klient
+    const openai = getOpenAI();
 
     const system = buildContext();
     const messages = [
@@ -203,6 +224,13 @@ app.post('/api/aurora/ask', async (req, res) => {
     res.json({ success: true, answer });
   } catch (err) {
     console.error('aurora error:', err);
+    // Returnera ett tydligt fel utan att krascha processen
+    if (err.message && err.message.includes('OPENAI_API_KEY')) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'OpenAI service is not configured. Please set OPENAI_API_KEY environment variable.' 
+      });
+    }
     res.status(500).json({ success: false, message: 'server error' });
   }
 });
