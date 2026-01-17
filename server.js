@@ -60,18 +60,37 @@ const ALLOWED_ORIGINS = new Set([
   'https://oversvamningsskydd-kund1.onrender.com',
   'https://vattentrygg.se',
   'https://www.vattentrygg.se',
-  'https://source-database.onrender.com',        
-'https://source-database.onrender.com/' 
+  'https://source-database.onrender.com',
+  'https://source-database.onrender.com/'
 ]);
+
+// Funktion för att kontrollera om origin är tillåten (inklusive wildcard-mönster)
+function isOriginAllowed(origin) {
+  if (!origin) return true; // Tillåt requests utan origin (t.ex. Postman)
+  
+  // Exakt match i ALLOWED_ORIGINS
+  if (ALLOWED_ORIGINS.has(origin)) return true;
+  
+  // Wildcard-mönster: *.run.app (Cloud Run)
+  if (origin.startsWith('https://') && origin.includes('.run.app')) {
+    return true;
+  }
+  
+  return false;
+}
+
 const corsOptions = {
   origin(origin, cb) {
-    if (!origin || ALLOWED_ORIGINS.has(origin)) return cb(null, true);
+    if (isOriginAllowed(origin)) {
+      return cb(null, true);
+    }
     return cb(new Error(`CORS blocked for origin: ${origin}`));
   },
   methods: ['GET', 'POST', 'OPTIONS'],
-   allowedHeaders: ['Content-Type', 'X-Internal-Auth', 'X-Tenant'],
+  allowedHeaders: ['Content-Type', 'Accept', 'X-Internal-Auth', 'X-Tenant'],
   credentials: false,
   optionsSuccessStatus: 204,
+  maxAge: 86400, // Cache preflight requests för 24 timmar
 };
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
