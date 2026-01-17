@@ -80,20 +80,31 @@ function isOriginAllowed(origin) {
 }
 
 const corsOptions = {
-  origin(origin, cb) {
+  origin: function(origin, callback) {
     if (isOriginAllowed(origin)) {
-      return cb(null, true);
+      // Returnera origin explicit för att sätta Access-Control-Allow-Origin korrekt
+      callback(null, origin || '*');
+    } else {
+      callback(new Error(`CORS blocked for origin: ${origin}`));
     }
-    return cb(new Error(`CORS blocked for origin: ${origin}`));
   },
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Accept', 'X-Internal-Auth', 'X-Tenant'],
+  exposedHeaders: [],
   credentials: false,
   optionsSuccessStatus: 204,
   maxAge: 86400, // Cache preflight requests för 24 timmar
+  preflightContinue: false,
 };
+
+// CORS middleware FÖRE alla routes
 app.use(cors(corsOptions));
+
+// Explicit OPTIONS handler för alla routes
 app.options('*', cors(corsOptions));
+
+// Ytterligare explicit OPTIONS handler för /api/aurora/ask
+app.options('/api/aurora/ask', cors(corsOptions));
 
 // --- I18n + statiska filer efter CORS ---
 app.use('/i18n', i18nRouter);                       // GET /i18n/:locale → i18n/strings.xx.json
