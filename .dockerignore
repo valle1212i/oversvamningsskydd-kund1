@@ -1,0 +1,39 @@
+# Ignorera node_modules (installeras i Docker)
+node_modules/
+
+# Ignorera .env (används via Cloud Run env vars)
+.env
+payments/.env
+
+# Ignorera git
+.git/
+.gitignore
+
+# Ignorera Docker-filer
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Ignorera loggfiler
+*.log
+npm-debug.log*
+visits.log
+
+# Ignorera OS-filer
+.DS_Store
+Thumbs.db
+
+# Ignorera IDE-filer
+.vscode/
+.idea/
+
+# Ignorera onödiga build-mappar (om de finns)
+.next/
+out/
+build/
+
+# Ignorera test-filer (om de finns)
+*.test.js
+*.spec.js
+test/
+tests/
