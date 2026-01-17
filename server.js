@@ -365,12 +365,19 @@ app.post('/api/contact', async (req, res) => {
 });
 
 // ----------------------------------------------------
-// Healthcheck & rot
+// Healthcheck
 // ----------------------------------------------------
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
-app.get('/', (_req, res) =>
-  res.sendFile(join(__dirname, 'dist', 'index.html'))
-);
+
+// ----------------------------------------------------
+// Catch-all route för SPA-routing (EFTER alla API-routes)
+// Returnerar index.html för alla GET-requests som inte matchar filer eller API-routes
+// ----------------------------------------------------
+app.get('*', (req, res) => {
+  // Om requesten redan matchat en statisk fil (via express.static) kommer vi aldrig hit
+  // Annars returnera index.html för SPA-routing
+  res.sendFile(join(__dirname, 'dist', 'index.html'));
+});
 
 // ----------------------------------------------------
 // Start
