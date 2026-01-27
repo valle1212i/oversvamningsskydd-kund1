@@ -313,7 +313,14 @@
       }
   });
 
-  // Test API connectivity
+  // Aurora is disabled by default - set window.ENABLE_AURORA = true to enable
+  // This prevents unnecessary API calls and quota usage
+  if (!window.ENABLE_AURORA) {
+    console.log('[Aurora] Chat is disabled. Set window.ENABLE_AURORA = true to enable.');
+    return; // Exit early - don't initialize Aurora
+  }
+
+  // Test API connectivity (only if enabled)
   async function testAPI() {
     try {
       const response = await fetch(API_URL, {
@@ -327,12 +334,12 @@
     }
   }
 
-  // Initialize i18n for Aurora
+  // Initialize i18n for Aurora (only if enabled)
   initAuroraI18n().then(() => {
     updateAuroraText();
     console.log('[Aurora] Initialization complete');
-    // Test API after initialization
-    testAPI();
+    // Test API after initialization (optional - can be removed)
+    // testAPI(); // Disabled to prevent unnecessary API calls
   }).catch((error) => {
     console.error('[Aurora] Initialization failed:', error);
   });

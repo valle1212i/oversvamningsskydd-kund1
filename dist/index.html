@@ -18,16 +18,57 @@
     (function() {
       // Only block redirects if we're actually on the homepage
       const currentPath = window.location.pathname;
-      if (currentPath === '/' || currentPath === '/index.html' || currentPath === '') {
-        // Block any redirects to FAQ when on homepage - simplified version
+      if (currentPath === '/' || currentPath === '/index.html' || currentPath === '' || currentPath === '/index.html') {
+        console.log('[Homepage] Blocking FAQ redirects');
+        
+        // Block history.replaceState redirects
         const originalReplace = window.history.replaceState;
         window.history.replaceState = function(...args) {
           if (args[2] && typeof args[2] === 'string' && args[2].includes('/faq')) {
-            console.log('[Blocked] Redirect to FAQ prevented from homepage');
+            console.log('[Blocked] Redirect to FAQ prevented via replaceState');
             return;
           }
           return originalReplace.apply(this, args);
         };
+        
+        // Block history.pushState redirects
+        const originalPush = window.history.pushState;
+        window.history.pushState = function(...args) {
+          if (args[2] && typeof args[2] === 'string' && args[2].includes('/faq')) {
+            console.log('[Blocked] Redirect to FAQ prevented via pushState');
+            return;
+          }
+          return originalPush.apply(this, args);
+        };
+        
+        // Block direct location changes
+        let isBlocking = true;
+        const originalLocationReplace = window.location.replace;
+        const originalLocationAssign = window.location.assign;
+        
+        window.location.replace = function(url) {
+          if (isBlocking && typeof url === 'string' && url.includes('/faq')) {
+            console.log('[Blocked] Redirect to FAQ prevented via location.replace');
+            return;
+          }
+          return originalLocationReplace.call(window.location, url);
+        };
+        
+        window.location.assign = function(url) {
+          if (isBlocking && typeof url === 'string' && url.includes('/faq')) {
+            console.log('[Blocked] Redirect to FAQ prevented via location.assign');
+            return;
+          }
+          return originalLocationAssign.call(window.location, url);
+        };
+        
+        // Stop blocking after page is fully loaded (allow normal navigation)
+        window.addEventListener('load', function() {
+          setTimeout(function() {
+            isBlocking = false;
+            console.log('[Homepage] FAQ redirect blocking disabled - page loaded');
+          }, 2000);
+        });
       }
     })();
   </script>
