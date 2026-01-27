@@ -24,21 +24,31 @@
         console.log('[Homepage] AGGRESSIVE FAQ redirect blocker - ACTIVE');
         
         let isBlocking = true;
-        const originalHref = Object.getOwnPropertyDescriptor(window.location, 'href') || 
-                            Object.getOwnPropertyDescriptor(Object.getPrototypeOf(window.location), 'href');
         
-        // Block window.location.href setter directly
-        Object.defineProperty(window.location, 'href', {
-          get: function() { return originalHref.get.call(window.location); },
-          set: function(url) {
-            if (isBlocking && typeof url === 'string' && url.includes('/faq')) {
-              console.log('[BLOCKED] window.location.href redirect to FAQ prevented:', url);
-              return;
-            }
-            return originalHref.set.call(window.location, url);
-          },
-          configurable: true
-        });
+        // Try to block window.location.href setter directly (may not work in all browsers)
+        try {
+          const originalHref = Object.getOwnPropertyDescriptor(window.location, 'href') || 
+                              Object.getOwnPropertyDescriptor(Object.getPrototypeOf(window.location), 'href');
+          
+          if (originalHref && originalHref.configurable) {
+            Object.defineProperty(window.location, 'href', {
+              get: function() { return originalHref.get.call(window.location); },
+              set: function(url) {
+                if (isBlocking && typeof url === 'string' && url.includes('/faq')) {
+                  console.log('[BLOCKED] window.location.href redirect to FAQ prevented:', url);
+                  return;
+                }
+                return originalHref.set.call(window.location, url);
+              },
+              configurable: true
+            });
+            console.log('[Homepage] window.location.href setter blocked successfully');
+          } else {
+            console.log('[Homepage] window.location.href is not configurable, using fallback methods');
+          }
+        } catch(e) {
+          console.log('[Homepage] Could not redefine href property (expected in some browsers), using fallback methods:', e.message);
+        }
         
         // Block history.replaceState redirects
         const originalReplace = window.history.replaceState;
