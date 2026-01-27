@@ -5,6 +5,7 @@ import cors from 'cors';
 import { OpenAI } from 'openai';
 import fs from 'node:fs/promises';
 import crypto from 'node:crypto';
+import Stripe from 'stripe';
 import i18nRouter from './server/i18n-router.js';
 import payoutsRoutes from './routes/payouts.js';
 
@@ -446,6 +447,93 @@ app.post('/api/contact', async (req, res) => {
     return res.status(500).json({ success: false, message: 'Serverfel' });
   }
 });
+
+// ----------------------------------------------------
+// Stripe Checkout Handler
+// ----------------------------------------------------
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2024-06-20',
+}) : null;
+
+const SUCCESS_URL = process.env.SUCCESS_URL || 'https://vattentrygg.se/success';
+const CANCEL_URL = process.env.CANCEL_URL || 'https://vattentrygg.se/cancel';
+const priceWhitelist = (process.env.ALLOWED_PRICE_IDS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+function isStripePriceId(s) {
+  return typeof s === 'string' && /^price_[A-Za-z0-9]+$/.test(s);
+}
+
+function validateWhitelist(priceId) {
+  return priceWhitelist.length === 0 || priceWhitelist.includes(priceId);
+}
+
+// Checkout handler function
+async function handleCheckoutSession(req, res) {
+  try {
+    if (!stripe) {
+      return res.status(503).json({ success: false, message: 'Stripe not configured' });
+    }
+
+    const { items, priceId, quantity, customer_email, mode = 'payment', metadata } = req.body || {};
+
+    let lineItems = [];
+    if (Array.isArray(items) && items.length > 0) {
+      lineItems = items.map((it, idx) => {
+        if (it.price) {
+          const candidate = String(it.price);
+          if (!isStripePriceId(candidate)) {
+            throw new Error(`Invalid price at index ${idx}: ${it.price}`);
+          }
+          if (!validateWhitelist(candidate)) {
+            throw new Error(`Price not allowed by whitelist: ${candidate}`);
+          }
+          const qty = Number.isInteger(it.quantity) && it.quantity > 0 ? it.quantity : 1;
+          return { price: candidate, quantity: qty };
+        }
+        throw new Error(`Item at index ${idx} must have 'price' field`);
+      });
+    } else if (priceId && Number.isInteger(quantity) && quantity > 0) {
+      if (!isStripePriceId(String(priceId))) {
+        throw new Error(`Invalid priceId: ${priceId}`);
+      }
+      if (!validateWhitelist(String(priceId))) {
+        throw new Error(`Price not allowed by whitelist: ${priceId}`);
+      }
+      lineItems = [{ price: String(priceId), quantity }];
+    } else {
+      return res.status(400).json({ success: false, message: 'items[] or priceId+quantity required' });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      mode,
+      line_items: lineItems,
+      success_url: `${SUCCESS_URL}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: CANCEL_URL,
+      customer_email: customer_email || undefined,
+      billing_address_collection: 'required',
+      shipping_address_collection: {
+        allowed_countries: ['SE', 'NO', 'DK', 'FI', 'DE'],
+      },
+      phone_number_collection: { enabled: true },
+      metadata: { ...(metadata || {}), source: 'vattentrygg' },
+    }, {
+      idempotencyKey: req.headers['idempotency-key'] || `cs_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+    });
+
+    return res.json({ success: true, url: session.url, id: session.id });
+  } catch (err) {
+    console.error('checkout error:', err);
+    const msg = err.raw?.message || err.message || 'server error';
+    const status = err.statusCode && Number.isInteger(err.statusCode) ? err.statusCode : 400;
+    return res.status(status).json({ success: false, message: msg });
+  }
+}
+
+app.post('/api/checkout/create-session', handleCheckoutSession);
+app.post('/create-checkout-session', handleCheckoutSession);
 
 // ----------------------------------------------------
 // Healthcheck endpoints for Cloud Run
