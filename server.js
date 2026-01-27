@@ -273,7 +273,16 @@ app.post('/api/aurora/ask', async (req, res) => {
     }
 
     // Lazy-initialize OpenAI klient
-    const openai = getOpenAI();
+    let openai;
+    try {
+      openai = getOpenAI();
+    } catch (initErr) {
+      console.error('Failed to initialize OpenAI:', initErr);
+      return res.status(503).json({ 
+        success: false, 
+        message: 'OpenAI service is not configured. Please set VATTENTRYGG_OPEN_API_KEY or OPENAI_API_KEY environment variable.' 
+      });
+    }
 
     const system = buildContext();
     const messages = [
@@ -295,10 +304,18 @@ app.post('/api/aurora/ask', async (req, res) => {
   } catch (err) {
     console.error('aurora error:', err);
     // Returnera ett tydligt fel utan att krascha processen
-    if (err.message && (err.message.includes('OPENAI_API_KEY') || err.message.includes('OpenAI API key'))) {
+    if (err.message && (err.message.includes('OPENAI_API_KEY') || err.message.includes('OpenAI API key') || err.message.includes('not configured'))) {
       return res.status(503).json({ 
         success: false, 
         message: 'OpenAI service is not configured. Please set VATTENTRYGG_OPEN_API_KEY or OPENAI_API_KEY environment variable.' 
+      });
+    }
+    // Handle OpenAI API errors
+    if (err.statusCode || err.response) {
+      console.error('OpenAI API error:', err.statusCode, err.message);
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Aurora chat is temporarily unavailable. Please try again later.' 
       });
     }
     res.status(500).json({ success: false, message: 'server error' });

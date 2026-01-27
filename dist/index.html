@@ -16,27 +16,18 @@
   <!-- Block redirects to FAQ from homepage -->
   <script>
     (function() {
-      // Block any redirects to FAQ when on homepage
-      if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+      // Only block redirects if we're actually on the homepage
+      const currentPath = window.location.pathname;
+      if (currentPath === '/' || currentPath === '/index.html' || currentPath === '') {
+        // Block any redirects to FAQ when on homepage - simplified version
         const originalReplace = window.history.replaceState;
         window.history.replaceState = function(...args) {
-          if (args[2] && args[2].toString().includes('/faq')) {
+          if (args[2] && typeof args[2] === 'string' && args[2].includes('/faq')) {
             console.log('[Blocked] Redirect to FAQ prevented from homepage');
             return;
           }
           return originalReplace.apply(this, args);
         };
-        
-        // Monitor for location changes (fallback)
-        let lastPath = window.location.pathname;
-        setInterval(function() {
-          const currentPath = window.location.pathname;
-          if (currentPath !== lastPath && currentPath.includes('/faq')) {
-            console.log('[Blocked] Detected redirect to FAQ, restoring homepage');
-            window.location.replace('/');
-          }
-          lastPath = currentPath;
-        }, 100);
       }
     })();
   </script>
