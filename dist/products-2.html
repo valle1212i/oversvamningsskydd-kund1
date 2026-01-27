@@ -72,11 +72,114 @@
   display: none;
 }
 
-/* Smooth scroll when filtering */
-html {
-  scroll-behavior: smooth;
+/* Apple-style Product Cards - Equal height and aligned buttons */
+.grid_4-col {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  align-items: stretch;
 }
 
+.grid_4-col > li {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.grid_4-col .card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.grid_4-col .card_body_small {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 1;
+}
+
+/* Image container - consistent height */
+.grid_4-col .card_body_small > img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  aspect-ratio: 4 / 3;
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+/* Content area - flex grow to push buttons down */
+.grid_4-col .card_body_small > .margin-top_xsmall {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Title spacing */
+.grid_4-col .card_body_small .heading_h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* Description text */
+.grid_4-col .card_body_small p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.8);
+  flex: 1;
+}
+
+/* Button container - always at bottom */
+.grid_4-col .margin_top-auto {
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.grid_4-col .button-group {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.grid_4-col .button-group .button {
+  flex: 1;
+  text-align: center;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9rem;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Specifications list - consistent spacing */
+.grid_4-col .w-list-unstyled[aria-label*="Plan features"] {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.grid_4-col .w-list-unstyled[aria-label*="Plan features"] li {
+  margin-bottom: 0.5rem;
+}
+
+.grid_4-col .w-list-unstyled[aria-label*="Plan features"] li:last-child {
+  margin-bottom: 0;
+}
+
+/* Responsive - tablet */
+@media (max-width: 991px) {
+  .grid_4-col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Responsive - mobile */
 @media (max-width: 767px) {
   .filter-buttons {
     flex-wrap: wrap;
@@ -87,6 +190,15 @@ html {
     font-size: 0.85rem;
     padding: 0.5rem 1rem;
   }
+  
+  .grid_4-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Smooth scroll when filtering */
+html {
+  scroll-behavior: smooth;
 }
 </style>
 </head>
