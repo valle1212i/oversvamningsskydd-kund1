@@ -2,6 +2,13 @@
   if (window.__aurora_inited) return;
   window.__aurora_inited = true;
 
+  // Aurora is disabled by default - set window.ENABLE_AURORA = true to enable
+  // This prevents unnecessary API calls and quota usage
+  if (!window.ENABLE_AURORA) {
+    console.log('[Aurora] Chat is disabled. Set window.ENABLE_AURORA = true to enable.');
+    return; // Exit early - don't initialize Aurora at all
+  }
+
   console.log('[Aurora] Initializing...');
 
   const API_URL = '/api/aurora/ask';
@@ -313,33 +320,26 @@
       }
   });
 
-  // Aurora is disabled by default - set window.ENABLE_AURORA = true to enable
-  // This prevents unnecessary API calls and quota usage
-  if (!window.ENABLE_AURORA) {
-    console.log('[Aurora] Chat is disabled. Set window.ENABLE_AURORA = true to enable.');
-    return; // Exit early - don't initialize Aurora
-  }
-
-  // Test API connectivity (only if enabled)
+  // Test API connectivity (disabled by default to prevent unnecessary calls)
   async function testAPI() {
-    try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: 'test', history: [] })
-      });
-      console.log('[Aurora] API test response status:', response.status);
-    } catch (error) {
-      console.error('[Aurora] API test failed:', error);
-    }
+    // Disabled - uncomment if you want to test API connectivity
+    // try {
+    //   const response = await fetch(API_URL, {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ question: 'test', history: [] })
+    //   });
+    //   console.log('[Aurora] API test response status:', response.status);
+    // } catch (error) {
+    //   console.error('[Aurora] API test failed:', error);
+    // }
   }
 
-  // Initialize i18n for Aurora (only if enabled)
+  // Initialize i18n for Aurora
   initAuroraI18n().then(() => {
     updateAuroraText();
     console.log('[Aurora] Initialization complete');
-    // Test API after initialization (optional - can be removed)
-    // testAPI(); // Disabled to prevent unnecessary API calls
+    // Test API disabled to prevent unnecessary API calls
   }).catch((error) => {
     console.error('[Aurora] Initialization failed:', error);
   });
