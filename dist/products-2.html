@@ -90,22 +90,30 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
 }
 
 .grid_4-col .card_body_small {
   display: flex;
   flex-direction: column;
   height: 100%;
-  flex: 1;
+  min-height: 0;
 }
 
 /* Image container - consistent height */
-.grid_4-col .card_body_small > img {
+.grid_4-col .card_body_small > img:first-child {
   width: 100%;
   height: auto;
   object-fit: cover;
   aspect-ratio: 4 / 3;
   border-radius: 0.5rem 0.5rem 0 0;
+  flex-shrink: 0;
+}
+
+/* Divider spacing */
+.grid_4-col .card_body_small > .divider {
+  flex-shrink: 0;
+  margin: 1rem 0;
 }
 
 /* Content area - flex grow to push buttons down */
@@ -113,40 +121,46 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
-/* Title spacing */
+/* Title spacing - consistent */
 .grid_4-col .card_body_small .heading_h3 {
   margin-top: 0;
   margin-bottom: 0.5rem;
   font-size: 1.5rem;
   font-weight: 500;
   line-height: 1.2;
+  flex-shrink: 0;
 }
 
-/* Description text */
-.grid_4-col .card_body_small p {
+/* Description text - consistent spacing */
+.grid_4-col .card_body_small .margin-top_xsmall > p {
   margin-top: 0;
-  margin-bottom: 1rem;
+  margin-bottom: 0;
   font-size: 0.95rem;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.8);
   flex: 1;
+  min-height: 0;
 }
 
-/* Button container - always at bottom */
-.grid_4-col .margin_top-auto {
+/* Button container - always at bottom, aligned across all cards */
+.grid_4-col .card_body_small .margin_top-auto {
   margin-top: auto;
-  padding-top: 1rem;
+  padding-top: 1.5rem;
+  flex-shrink: 0;
 }
 
 .grid_4-col .button-group {
   display: flex;
   gap: 0.75rem;
-  align-items: center;
+  align-items: stretch;
+  width: 100%;
 }
 
-.grid_4-col .button-group .button {
+.grid_4-col .button-group .button,
+.grid_4-col .button-group .button.w-inline-block {
   flex: 1;
   text-align: center;
   padding: 0.75rem 1.25rem;
@@ -155,10 +169,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  white-space: nowrap;
 }
 
-/* Specifications list - consistent spacing */
-.grid_4-col .w-list-unstyled[aria-label*="Plan features"] {
+/* Specifications list - consistent spacing outside card */
+.grid_4-col + .w-list-unstyled[aria-label*="Plan features"],
+.grid_4-col li .w-list-unstyled[aria-label*="Plan features"] {
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
