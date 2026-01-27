@@ -132,6 +132,16 @@ app.options('*', cors(corsOptions));
 // Ytterligare explicit OPTIONS handler för /api/aurora/ask
 app.options('/api/aurora/ask', cors(corsOptions));
 
+// --- Redirect www to non-www (before static files) ---
+app.use((req, res, next) => {
+  const host = req.get('host') || '';
+  if (host.startsWith('www.')) {
+    const newHost = host.replace(/^www\./, '');
+    return res.redirect(301, `${req.protocol}://${newHost}${req.originalUrl}`);
+  }
+  next();
+});
+
 // --- I18n + statiska filer efter CORS ---
 app.use('/i18n', i18nRouter);                       // GET /i18n/:locale → i18n/strings.xx.json
 app.use(express.static(join(__dirname, 'public'))); // /lang-switcher.js

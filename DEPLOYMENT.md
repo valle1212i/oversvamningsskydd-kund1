@@ -60,6 +60,19 @@ Update Cloud Run health check to use HTTP instead of TCP:
 
 This will use the new `/health` endpoint we added to server.js.
 
+## Domain Configuration
+
+### www Subdomain
+
+The server automatically redirects `www.vattentrygg.se` → `vattentrygg.se`. However, you need to:
+
+1. **Configure DNS**: Ensure `www.vattentrygg.se` has a CNAME or A record pointing to Cloud Run
+2. **Add to Cloud Run**: In Cloud Run → Manage Custom Domains, add both:
+   - `vattentrygg.se`
+   - `www.vattentrygg.se`
+
+If `www` subdomain isn't configured, it will show 500 errors. The redirect only works if DNS is properly configured.
+
 ## Troubleshooting
 
 ### "Error establishing a database connection"
