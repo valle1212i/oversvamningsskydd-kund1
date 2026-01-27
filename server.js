@@ -16,6 +16,31 @@ import { dirname, join } from 'node:path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// ============================================================
+// Global Error Handlers - Prevent server crashes
+// ============================================================
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception:', err);
+  // Don't exit - let Cloud Run handle health checks
+  // Log error but keep server running
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit - log and continue
+});
+
+// Graceful shutdown handlers
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully...');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully...');
+  process.exit(0);
+});
+
 // --- Läs in products/faq (robust fallback) ---
 function loadAuroraData() {
   // products.json
@@ -423,9 +448,37 @@ app.post('/api/contact', async (req, res) => {
 });
 
 // ----------------------------------------------------
-// Healthcheck
+// Healthcheck endpoints for Cloud Run
 // ----------------------------------------------------
-app.get('/api/health', (_req, res) => res.json({ ok: true }));
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    env: process.env.NODE_ENV || 'not set'
+  });
+});
+
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    ok: true,
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
+// ============================================================
+// Error Middleware - Catch all route errors
+// ============================================================
+app.use((err, req, res, next) => {
+  console.error('Route error:', err);
+  // Don't expose internal errors to clients
+  res.status(err.status || 500).json({
+    success: false,
+    message: 'Server error occurred',
+    ...(process.env.NODE_ENV === 'development' && { error: err.message })
+  });
+});
 
 // ----------------------------------------------------
 // Catch-all route för SPA-routing (EFTER alla API-routes)
