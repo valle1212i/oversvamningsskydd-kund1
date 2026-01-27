@@ -120,27 +120,53 @@
           }
         }, true);
         
-        // Aggressive URL monitoring - check every 10ms
+        // ULTRA-AGGRESSIVE URL monitoring - check every 5ms and FORCE prevent navigation
         let lastUrl = window.location.href;
+        let redirectAttempts = 0;
         const checkRedirect = setInterval(function() {
           const currentUrl = window.location.href;
           if (currentUrl !== lastUrl && currentUrl.includes('/faq')) {
-            console.log('[BLOCKED] Detected redirect to FAQ, FORCE restoring homepage');
+            redirectAttempts++;
+            console.log('[BLOCKED] Detected redirect to FAQ (attempt #' + redirectAttempts + '), FORCE restoring homepage');
+            
+            // Stop all navigation immediately
             window.stop();
-            if (window.history && window.history.replaceState) {
+            
+            // Force history back to homepage
+            try {
               window.history.replaceState(null, '', '/');
-            }
-            // Force reload if still on FAQ
-            setTimeout(function() {
-              if (window.location.href.includes('/faq')) {
+              window.history.pushState(null, '', '/');
+            } catch(e) {}
+            
+            // Force location change immediately
+            try {
+              if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
             window.location.replace('/');
           }
-            }, 0);
+            } catch(e) {}
+            
+            // If still on FAQ after 1ms, force reload
+            setTimeout(function() {
+              const checkUrl = window.location.href;
+              if (checkUrl.includes('/faq')) {
+                console.log('[BLOCKED] Still on FAQ, forcing page reload');
+                window.location.href = '/';
+                window.location.replace('/');
+                window.location.assign('/');
+              }
+            }, 1);
+            
             lastUrl = '/';
+            
+            // If too many attempts, stop monitoring (something else is wrong)
+            if (redirectAttempts > 50) {
+              console.error('[BLOCKED] Too many redirect attempts, stopping monitor');
+              clearInterval(checkRedirect);
+            }
             return;
           }
           lastUrl = currentUrl;
-        }, 10); // Check every 10ms - very aggressive
+        }, 5); // Check every 5ms - ultra-aggressive
         
         // MutationObserver to catch DOM changes that might trigger redirects
         const observer = new MutationObserver(function(mutations) {
@@ -231,17 +257,48 @@
           }
           
           // Block all anchor tags with FAQ href
-          const faqLinks = document.querySelectorAll('a[href*="/faq"]');
+          const faqLinks = document.querySelectorAll('a[href*="/faq"], a[href*="faq"], [data-href*="/faq"], [data-href*="faq"]');
           faqLinks.forEach(function(link) {
             link.href = '#';
+            link.setAttribute('href', '#');
+            link.removeAttribute('data-href');
             link.onclick = function(e) {
               e.preventDefault();
               e.stopPropagation();
+              e.stopImmediatePropagation();
               console.log('[BLOCKED] FAQ link click prevented');
               return false;
             };
+            // Also prevent default action
+            link.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              e.stopImmediatePropagation();
+              return false;
+            }, true);
           });
         };
+        
+        // Global click interceptor - catch ALL clicks before they bubble
+        document.addEventListener('click', function(e) {
+          if (!isBlocking) return;
+          
+          let target = e.target;
+          let href = null;
+          
+          // Check target and all parents for FAQ links
+          while (target && target !== document) {
+            href = target.href || target.getAttribute('href') || target.getAttribute('data-href');
+            if (href && (href.includes('/faq') || href.includes('faq'))) {
+              console.log('[BLOCKED] Global click interceptor caught FAQ link click');
+              e.preventDefault();
+              e.stopPropagation();
+              e.stopImmediatePropagation();
+              return false;
+            }
+            target = target.parentElement;
+          }
+        }, true); // Use capture phase to catch before Webflow
         
         // Try to block Webflow immediately and after scripts load
         blockWebflowNav();
@@ -256,12 +313,49 @@
         setTimeout(blockWebflowNav, 1000);
         setTimeout(blockWebflowNav, 2000);
         
-        // Stop blocking after 15 seconds (allow normal navigation after page is stable)
+        // Immediate check on page load - if we're already on FAQ, force back
+        if (window.location.href.includes('/faq')) {
+          console.log('[BLOCKED] Already on FAQ page on load, forcing back to homepage');
+          window.history.replaceState(null, '', '/');
+          window.location.replace('/');
+        }
+        
+        // Intercept Webflow's page initialization - run BEFORE webflow.js loads
+        const originalWebflowInit = window.Webflow || {};
+        Object.defineProperty(window, 'Webflow', {
+          get: function() {
+            return originalWebflowInit;
+          },
+          set: function(value) {
+            if (value && value.require) {
+              const originalRequire = value.require;
+              value.require = function(module) {
+                const result = originalRequire.apply(this, arguments);
+                if (module === 'ix2' && result && result.init) {
+                  const originalInit = result.init;
+                  result.init = function() {
+                    console.log('[BLOCKED] Webflow ix2 init intercepted BEFORE it runs');
+                    // Don't call original
+                  };
+                }
+                return result;
+              };
+            }
+            Object.defineProperty(window, 'Webflow', {
+              value: value,
+              writable: true,
+              configurable: true
+            });
+          },
+          configurable: true
+        });
+        
+        // Stop blocking after 20 seconds (allow normal navigation after page is stable)
         setTimeout(function() {
           isBlocking = false;
           clearInterval(checkRedirect);
           console.log('[Homepage] FAQ redirect blocking disabled - page should be stable');
-        }, 15000);
+        }, 20000);
       }
     })();
   </script>
