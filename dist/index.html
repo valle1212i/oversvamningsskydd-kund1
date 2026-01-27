@@ -90,6 +90,36 @@
           return originalLocationAssign.call(window.location, url);
         };
         
+        // Block window.open (in case Webflow uses it)
+        const originalWindowOpen = window.open;
+        window.open = function(url, target, features) {
+          if (isBlocking && typeof url === 'string' && url.includes('/faq')) {
+            console.log('[BLOCKED] window.open redirect to FAQ prevented');
+            return null;
+          }
+          return originalWindowOpen.call(window, url, target, features);
+        };
+        
+        // Block fetch requests to FAQ (in case Webflow loads FAQ via fetch)
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options) {
+          if (isBlocking && typeof url === 'string' && url.includes('/faq')) {
+            console.log('[BLOCKED] fetch request to FAQ prevented');
+            return Promise.reject(new Error('FAQ fetch blocked'));
+          }
+          return originalFetch.apply(this, arguments);
+        };
+        
+        // Block XMLHttpRequest to FAQ
+        const originalXHROpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function(method, url) {
+          if (isBlocking && typeof url === 'string' && url.includes('/faq')) {
+            console.log('[BLOCKED] XMLHttpRequest to FAQ prevented');
+            return;
+          }
+          return originalXHROpen.apply(this, arguments);
+        };
+        
         // Block beforeunload if redirecting to FAQ
         window.addEventListener('beforeunload', function(e) {
           if (isBlocking && window.location.href.includes('/faq')) {
