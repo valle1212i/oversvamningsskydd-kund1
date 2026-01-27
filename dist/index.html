@@ -90,6 +90,26 @@
           }
         }, true);
         
+        // Block popstate events (back/forward navigation to FAQ)
+        window.addEventListener('popstate', function(e) {
+          if (isBlocking && window.location.href.includes('/faq')) {
+            console.log('[BLOCKED] popstate navigation to FAQ prevented');
+            window.history.pushState(null, '', '/');
+            e.preventDefault();
+            e.stopImmediatePropagation();
+          }
+        }, true);
+        
+        // Block hashchange events that might trigger FAQ
+        window.addEventListener('hashchange', function(e) {
+          if (isBlocking && window.location.href.includes('/faq')) {
+            console.log('[BLOCKED] hashchange navigation to FAQ prevented');
+            window.history.replaceState(null, '', '/');
+            e.preventDefault();
+            e.stopImmediatePropagation();
+          }
+        }, true);
+        
         // Aggressive URL monitoring - check every 10ms
         let lastUrl = window.location.href;
         const checkRedirect = setInterval(function() {
