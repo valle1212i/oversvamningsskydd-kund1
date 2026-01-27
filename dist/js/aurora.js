@@ -4,7 +4,7 @@
 
   console.log('[Aurora] Initializing...');
 
-  const API_URL = 'https://aurora-backend-kund-oversvamningsskydd.onrender.com/api/aurora/ask';
+  const API_URL = '/api/aurora/ask';
   
   // i18n support
   let currentStrings = {};

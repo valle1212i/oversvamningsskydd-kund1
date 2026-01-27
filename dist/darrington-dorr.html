@@ -400,7 +400,8 @@
   <script src="js/aurora.js"></script>
   <script>
     (function(){
-      const API_BASE = 'https://aurora-backend-kund-oversvamningsskydd.onrender.com';
+      // Use relative URL to call same Cloud Run service
+      const API_BASE = '';
       const PRICE_ID = 'price_1S3ycMAg8z29IvXWhe6Poosy'; // Ditt riktiga Stripe Price ID
     
       const btn = document.getElementById('buy-darrington');
