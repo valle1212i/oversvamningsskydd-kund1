@@ -11,7 +11,8 @@ Set these in Google Cloud Run Console:
 NODE_ENV=production
 PORT=8080  # Automatically set by Cloud Run
 
-# OpenAI API Key (required for Aurora chat feature)
+# OpenAI API Key (optional - required only if using Aurora chat feature)
+# If not set, Aurora chat will return 503 but site will still work
 OPENAI_API_KEY=sk-...
 
 # IP Salt for hashing IP addresses (security)

@@ -247,9 +247,10 @@ app.post('/api/aurora/ask', async (req, res) => {
   try {
     // Guard: kontrollera om OpenAI API-nyckel finns
     if (!process.env.OPENAI_API_KEY) {
+      console.warn('Aurora API called but OPENAI_API_KEY not configured');
       return res.status(503).json({ 
         success: false, 
-        message: 'OpenAI service is not configured. Please set OPENAI_API_KEY environment variable.' 
+        message: 'Aurora chat is temporarily unavailable. Please contact support for assistance.' 
       });
     }
 
@@ -555,8 +556,29 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// ----------------------------------------------------
+// Catch-all route för SPA-routing (EFTER alla API-routes)
+// Returnerar index.html för alla GET-requests som inte matchar filer eller API-routes
+// ----------------------------------------------------
+app.get('*', (req, res, next) => {
+  // Skip API routes
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ success: false, message: 'API endpoint not found' });
+  }
+  
+  // Om requesten redan matchat en statisk fil (via express.static) kommer vi aldrig hit
+  // Annars returnera index.html för SPA-routing
+  const indexPath = join(__dirname, 'dist', 'index.html');
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('Error sending index.html:', err);
+      next(err); // Pass error to error middleware
+    }
+  });
+});
+
 // ============================================================
-// Error Middleware - Catch all route errors
+// Error Middleware - Catch all route errors (MUST BE LAST)
 // ============================================================
 app.use((err, req, res, next) => {
   console.error('Route error:', err);
@@ -566,16 +588,6 @@ app.use((err, req, res, next) => {
     message: 'Server error occurred',
     ...(process.env.NODE_ENV === 'development' && { error: err.message })
   });
-});
-
-// ----------------------------------------------------
-// Catch-all route för SPA-routing (EFTER alla API-routes)
-// Returnerar index.html för alla GET-requests som inte matchar filer eller API-routes
-// ----------------------------------------------------
-app.get('*', (req, res) => {
-  // Om requesten redan matchat en statisk fil (via express.static) kommer vi aldrig hit
-  // Annars returnera index.html för SPA-routing
-  res.sendFile(join(__dirname, 'dist', 'index.html'));
 });
 
 // ----------------------------------------------------
