@@ -303,21 +303,44 @@ app.post('/api/aurora/ask', async (req, res) => {
     res.json({ success: true, answer });
   } catch (err) {
     console.error('aurora error:', err);
-    // Returnera ett tydligt fel utan att krascha processen
+    
+    // Handle OpenAI API quota/billing errors
+    if (err.status === 429 || err.code === 'insufficient_quota' || err.type === 'insufficient_quota') {
+      console.error('OpenAI quota exceeded:', err.message);
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Aurora chat is temporarily unavailable due to service limits. Please try again later or contact support.' 
+      });
+    }
+    
+    // Handle rate limit errors
+    if (err.status === 429 || err.type === 'rate_limit_error') {
+      console.error('OpenAI rate limit:', err.message);
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Aurora chat is temporarily unavailable due to high demand. Please try again in a moment.' 
+      });
+    }
+    
+    // Handle configuration errors
     if (err.message && (err.message.includes('OPENAI_API_KEY') || err.message.includes('OpenAI API key') || err.message.includes('not configured'))) {
       return res.status(503).json({ 
         success: false, 
         message: 'OpenAI service is not configured. Please set VATTENTRYGG_OPEN_API_KEY or OPENAI_API_KEY environment variable.' 
       });
     }
-    // Handle OpenAI API errors
-    if (err.statusCode || err.response) {
-      console.error('OpenAI API error:', err.statusCode, err.message);
+    
+    // Handle other OpenAI API errors
+    if (err.statusCode || err.response || err.status) {
+      const status = err.status || err.statusCode || 503;
+      console.error('OpenAI API error:', status, err.message);
       return res.status(503).json({ 
         success: false, 
         message: 'Aurora chat is temporarily unavailable. Please try again later.' 
       });
     }
+    
+    // Generic error fallback
     res.status(500).json({ success: false, message: 'server error' });
   }
 });
