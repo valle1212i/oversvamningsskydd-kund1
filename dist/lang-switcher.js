@@ -140,17 +140,29 @@
   document.addEventListener('DOMContentLoaded', () => {
     const initial = getSavedLang();
 
-    // montera bredvid CTA om mount finns, annars försök i .button-group
-    let mount = document.getElementById('lang-mount')
-            || document.querySelector('.button-group')
-            || document.body;
-
-    // Om mount är .button-group (inte en separat div) – skapa liten behållare
-    if (mount && mount.classList.contains('button-group')) {
-      const holder = document.createElement('div');
-      holder.id = 'lang-mount';
-      mount.appendChild(holder);
-      mount = holder;
+    // Prioritize #lang-mount in header (next to "Få en offert" button)
+    // Avoid rendering in dropdown menu button-groups
+    let mount = document.getElementById('lang-mount');
+    
+    // If no specific mount found, look for button-group in nav_right (header)
+    if (!mount) {
+      const navRight = document.querySelector('.nav_right .button-group');
+      if (navRight) {
+        mount = document.createElement('div');
+        mount.id = 'lang-mount';
+        // Insert before mobile menu button
+        const mobileBtn = navRight.querySelector('.nav_mobile-menu-button');
+        if (mobileBtn) {
+          navRight.insertBefore(mount, mobileBtn);
+        } else {
+          navRight.appendChild(mount);
+        }
+      }
+    }
+    
+    // Fallback: use body if nothing found
+    if (!mount) {
+      mount = document.body;
     }
 
     renderSwitcher(mount, initial);
