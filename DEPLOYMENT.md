@@ -13,7 +13,10 @@ PORT=8080  # Automatically set by Cloud Run
 
 # OpenAI API Key (optional - required only if using Aurora chat feature)
 # If not set, Aurora chat will return 503 but site will still work
-OPENAI_API_KEY=sk-...
+# Supports both variable names (VATTENTRYGG_OPEN_API_KEY takes precedence)
+VATTENTRYGG_OPEN_API_KEY=sk-...
+# Or use the standard name:
+# OPENAI_API_KEY=sk-...
 
 # IP Salt for hashing IP addresses (security)
 # Generate: openssl rand -hex 32

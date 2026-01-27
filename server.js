@@ -157,12 +157,15 @@ app.use('/api/payouts', payoutsRoutes);
 // ----------------------------------------------------
 let openaiInstance = null;
 
+// Support both VATTENTRYGG_OPEN_API_KEY and OPENAI_API_KEY for backwards compatibility
+const OPENAI_KEY = process.env.VATTENTRYGG_OPEN_API_KEY || process.env.OPENAI_API_KEY;
+
 function getOpenAI() {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY is not configured');
+  if (!OPENAI_KEY) {
+    throw new Error('OpenAI API key is not configured (check VATTENTRYGG_OPEN_API_KEY or OPENAI_API_KEY)');
   }
   if (!openaiInstance) {
-    openaiInstance = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    openaiInstance = new OpenAI({ apiKey: OPENAI_KEY });
   }
   return openaiInstance;
 }
@@ -256,8 +259,8 @@ async function postJsonWithTimeout(url, { headers = {}, body = {}, timeoutMs = 8
 app.post('/api/aurora/ask', async (req, res) => {
   try {
     // Guard: kontrollera om OpenAI API-nyckel finns
-    if (!process.env.OPENAI_API_KEY) {
-      console.warn('Aurora API called but OPENAI_API_KEY not configured');
+    if (!OPENAI_KEY) {
+      console.warn('Aurora API called but OpenAI API key not configured (check VATTENTRYGG_OPEN_API_KEY or OPENAI_API_KEY)');
       return res.status(503).json({ 
         success: false, 
         message: 'Aurora chat is temporarily unavailable. Please contact support for assistance.' 
@@ -292,10 +295,10 @@ app.post('/api/aurora/ask', async (req, res) => {
   } catch (err) {
     console.error('aurora error:', err);
     // Returnera ett tydligt fel utan att krascha processen
-    if (err.message && err.message.includes('OPENAI_API_KEY')) {
+    if (err.message && (err.message.includes('OPENAI_API_KEY') || err.message.includes('OpenAI API key'))) {
       return res.status(503).json({ 
         success: false, 
-        message: 'OpenAI service is not configured. Please set OPENAI_API_KEY environment variable.' 
+        message: 'OpenAI service is not configured. Please set VATTENTRYGG_OPEN_API_KEY or OPENAI_API_KEY environment variable.' 
       });
     }
     res.status(500).json({ success: false, message: 'server error' });
