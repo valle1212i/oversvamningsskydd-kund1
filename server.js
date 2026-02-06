@@ -148,6 +148,23 @@ app.use(express.static(join(__dirname, 'public'))); // /lang-switcher.js
 app.use(express.static(join(__dirname, 'dist')));   // Webflow-export
 app.use('/api/payouts', payoutsRoutes);
 
+// --- Explicit favicon handling (FÖRE catch-all) ---
+// Apple-enheter gör aggressiva prefetch-requests till /favicon.ico
+// Säkerställ att dessa hanteras korrekt utan att trigga catch-all eller DB-init
+app.get('/favicon.ico', (req, res) => {
+  const faviconPath = join(__dirname, 'dist', 'images', 'favicon.ico');
+  res.sendFile(faviconPath, (err) => {
+    if (err) {
+      // Om favicon inte finns, returnera 204 No Content (standard för saknad favicon)
+      // Detta förhindrar att request går till catch-all och triggar onödig logik
+      res.status(204).end();
+    }
+  });
+});
+
+// --- Explicit robots.txt och sitemap.xml handling ---
+app.get('/robots.txt', (req, res) => res.status(404).end());
+app.get('/sitemap.xml', (req, res) => res.status(404).end());
 
 // ...OpenAI, dina API-routes etc. följer som du har...
 
@@ -617,6 +634,21 @@ app.get('*', (req, res, next) => {
   // Skip API routes
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ success: false, message: 'API endpoint not found' });
+  }
+  
+  // Skip statiska assets som Apple-enheter kan prefetcha aggressivt
+  // Dessa bör redan hanteras av express.static, men detta är en säkerhetsåtgärd
+  // för att förhindra att de går igenom catch-all och potentiellt triggar onödig logik
+  const staticExtensions = ['.ico', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.avif', '.css', '.js', '.woff', '.woff2', '.ttf', '.eot', '.json', '.xml', '.txt', '.pdf'];
+  const pathLower = req.path.toLowerCase();
+  if (staticExtensions.some(ext => pathLower.endsWith(ext))) {
+    // Om det är en statisk asset som inte hittades, returnera 404 istället för att försöka skicka index.html
+    return res.status(404).end();
+  }
+  
+  // Skip robots.txt, sitemap.xml, etc. (redan hanterat ovan, men dubbelkolla)
+  if (['/robots.txt', '/sitemap.xml', '/sitemap.txt'].includes(req.path)) {
+    return res.status(404).end();
   }
   
   // Om requesten redan matchat en statisk fil (via express.static) kommer vi aldrig hit
