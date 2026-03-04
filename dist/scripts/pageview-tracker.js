@@ -18,6 +18,9 @@
     const hostnameNoWWW = (h) => (h || location.hostname).replace(/^www\./i, '');
   
     function sendJSON(url, payload){
+      // Temporary debug logging
+      console.log("[PageviewTracker] Sending pageview payload:", payload);
+      console.log("[PageviewTracker] Endpoint:", url);
       try {
         const body = JSON.stringify(payload);
         if (navigator.sendBeacon) {
@@ -28,8 +31,22 @@
           headers: { 'Content-Type': 'application/json' },
           body,
           keepalive: true
-        }).catch(()=>{});
-      } catch(e){ /* tyst fail */ }
+        })
+          .then(function (response) {
+            console.log("[PageviewTracker] Response status:", response.status);
+            return response.text();
+          })
+          .then(function (text) {
+            var data;
+            try { data = text ? JSON.parse(text) : null; } catch (_) { data = text; }
+            console.log("[PageviewTracker] Response body:", data);
+          })
+          .catch(function (err) {
+            console.error("[PageviewTracker] Tracking request failed:", err);
+          });
+      } catch(e){
+        console.error("[PageviewTracker] Tracking request failed:", e);
+      }
     }
   
     function buildPayload(){
