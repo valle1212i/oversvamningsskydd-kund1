@@ -34,7 +34,7 @@
   
     function buildPayload(){
       return {
-        site: hostnameNoWWW(location.hostname),
+        site: "vattentrygg",
         url: location.href,
         referrer: document.referrer || '',
         title: document.title || '',
