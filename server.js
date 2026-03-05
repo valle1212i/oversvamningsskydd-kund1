@@ -507,12 +507,6 @@ app.post('/api/contact', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Meddelande krävs' });
     }
 
-    const secret = process.env.SOURCE_WEBHOOK_SECRET;
-    if (!secret) {
-      console.error('Contact webhook: SOURCE_WEBHOOK_SECRET not set');
-      return res.status(500).json({ success: false, message: CONTACT_ERROR_MESSAGE });
-    }
-
     const payload = {
       tenant: 'vattentrygg',
       name,
@@ -523,14 +517,16 @@ app.post('/api/contact', async (req, res) => {
     };
 
     const rawBody = JSON.stringify(payload);
-    const signature = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+    const headers = { 'X-Tenant': 'vattentrygg' };
+    const secret = process.env.SOURCE_WEBHOOK_SECRET;
+    if (secret) {
+      const signature = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+      headers['X-Signature'] = `sha256=${signature}`;
+    }
 
     const { ok, status, data } = await postRawWithTimeout(SOURCE_WEBHOOK_URL, {
       rawBody,
-      headers: {
-        'X-Tenant': 'vattentrygg',
-        'X-Signature': `sha256=${signature}`,
-      },
+      headers,
       timeoutMs: 8000,
     });
 
