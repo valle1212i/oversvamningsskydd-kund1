@@ -22,10 +22,10 @@ VATTENTRYGG_OPEN_API_KEY=sk-...
 # Generate: openssl rand -hex 32
 IP_SALT=your-random-string-here
 
-# Source public API (contact form → Kunder → Kundmeddelanden)
-# Contact form is forwarded to POST /api/messages with X-Tenant (no signature).
-# Optional: override URL (default: Cloud Run /api/messages)
-# SOURCE_MESSAGES_URL=https://source-database-809785351172.europe-north1.run.app/api/messages
+# Source analytics ingest (contact form → form_submit event → Kunder/Kundmeddelanden)
+# Contact form is sent as a form_submit analytics event to POST /api/analytics with X-Tenant.
+# Optional: override URL (default: Cloud Run /api/analytics)
+# SOURCE_ANALYTICS_URL=https://source-database-809785351172.europe-north1.run.app/api/analytics
 
 # Portal pageviews tracking (optional)
 PORTAL_PAGEVIEWS_URL=https://source-database.onrender.com/api/pageviews/track

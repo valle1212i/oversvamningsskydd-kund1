@@ -457,10 +457,10 @@ app.post('/api/visit', async (req, res) => {
 });
 
 // ----------------------------------------------------
-// API: Contact → forward to Source public API /api/messages
-//  - Validates fields, builds JSON payload, POST with X-Tenant (no signature)
+// API: Contact → send as form_submit analytics event to Source /api/analytics
+//  - Source backend converts these events into leads/messages for the tenant
 // ----------------------------------------------------
-const SOURCE_MESSAGES_URL = process.env.SOURCE_MESSAGES_URL || 'https://source-database-809785351172.europe-north1.run.app/api/messages';
+const SOURCE_ANALYTICS_URL = process.env.SOURCE_ANALYTICS_URL || 'https://source-database-809785351172.europe-north1.run.app/api/analytics';
 const CONTACT_HONEYPOT_FIELD = 'company';
 const contactSeen = new Map();
 
@@ -507,16 +507,27 @@ app.post('/api/contact', async (req, res) => {
     }
 
     const payload = {
-      tenant: 'vattentrygg',
-      name,
-      email,
-      phone: phone || undefined,
-      subject: 'Kontakt från hemsidan',
-      message,
+      type: 'form_submit',
+      url: 'https://vattentrygg.se/contact',
+      page: '/contact',
+      referrer: req.get('referer') || '',
+      device: 'desktop',
+      timestamp: new Date().toISOString(),
+      session_id: 'sess_' + Date.now(),
+      user_id: null,
+      user_agent: req.get('user-agent') || '',
+      event_props: {
+        form_action: 'https://vattentrygg.se/contact',
+        field_count: 4,
+        name,
+        email,
+        phone: phone || '',
+        message,
+      },
     };
 
     const rawBody = JSON.stringify(payload);
-    const { status, data } = await postRawWithTimeout(SOURCE_MESSAGES_URL, {
+    const { status, data } = await postRawWithTimeout(SOURCE_ANALYTICS_URL, {
       rawBody,
       headers: { 'X-Tenant': 'vattentrygg' },
       timeoutMs: 8000,
@@ -526,7 +537,7 @@ app.post('/api/contact', async (req, res) => {
       return res.json({ success: true, message: CONTACT_SUCCESS_MESSAGE });
     }
 
-    console.error('Contact API error:', status, data);
+    console.error('Contact analytics error:', status, data);
     return res.status(502).json({ success: false, message: CONTACT_ERROR_MESSAGE });
   } catch (err) {
     console.error('contact error:', err);
