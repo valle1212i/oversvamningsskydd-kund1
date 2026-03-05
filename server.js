@@ -457,10 +457,10 @@ app.post('/api/visit', async (req, res) => {
 });
 
 // ----------------------------------------------------
-// API: Contact → send as form_submit analytics event to Source /api/analytics
-//  - Source backend converts these events into leads/messages for the tenant
+// API: Contact → send as form_submit to Source /api/ingest/analytics
+//  - Ingestion endpoint used by production tenants; routes into leads/messages
 // ----------------------------------------------------
-const SOURCE_ANALYTICS_URL = process.env.SOURCE_ANALYTICS_URL || 'https://source-database-809785351172.europe-north1.run.app/api/analytics';
+const SOURCE_INGEST_ANALYTICS_URL = process.env.SOURCE_INGEST_ANALYTICS_URL || 'https://source-database-809785351172.europe-north1.run.app/api/ingest/analytics';
 const CONTACT_HONEYPOT_FIELD = 'company';
 const contactSeen = new Map();
 
@@ -507,27 +507,23 @@ app.post('/api/contact', async (req, res) => {
     }
 
     const payload = {
+      tenant: 'vattentrygg',
       type: 'form_submit',
       url: 'https://vattentrygg.se/contact',
       page: '/contact',
-      referrer: req.get('referer') || '',
       device: 'desktop',
       timestamp: new Date().toISOString(),
-      session_id: 'sess_' + Date.now(),
-      user_id: null,
-      user_agent: req.get('user-agent') || '',
       event_props: {
-        form_action: 'https://vattentrygg.se/contact',
-        field_count: 4,
         name,
         email,
         phone: phone || '',
         message,
+        form: 'contact',
       },
     };
 
     const rawBody = JSON.stringify(payload);
-    const { status, data } = await postRawWithTimeout(SOURCE_ANALYTICS_URL, {
+    const { status, data } = await postRawWithTimeout(SOURCE_INGEST_ANALYTICS_URL, {
       rawBody,
       headers: { 'X-Tenant': 'vattentrygg' },
       timeoutMs: 8000,
@@ -537,7 +533,7 @@ app.post('/api/contact', async (req, res) => {
       return res.json({ success: true, message: CONTACT_SUCCESS_MESSAGE });
     }
 
-    console.error('Contact analytics error:', status, data);
+    console.error('Contact ingest analytics error:', status, data);
     return res.status(502).json({ success: false, message: CONTACT_ERROR_MESSAGE });
   } catch (err) {
     console.error('contact error:', err);
