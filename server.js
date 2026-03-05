@@ -457,11 +457,10 @@ app.post('/api/visit', async (req, res) => {
 });
 
 // ----------------------------------------------------
-// API: Contact → Source multi-tenant webhook (server-to-server)
-//  - Validerar fält, bygger payload, signerar med HMAC-SHA256
-//  - POST till SOURCE_WEBHOOK_URL med X-Tenant och X-Signature
+// API: Contact → forward to Source public API /api/messages
+//  - Validates fields, builds JSON payload, POST with X-Tenant (no signature)
 // ----------------------------------------------------
-const SOURCE_WEBHOOK_URL = process.env.SOURCE_WEBHOOK_URL || 'https://source-database-809785351172.europe-north1.run.app/webhooks/messages';
+const SOURCE_MESSAGES_URL = process.env.SOURCE_MESSAGES_URL || 'https://source-database-809785351172.europe-north1.run.app/api/messages';
 const CONTACT_HONEYPOT_FIELD = 'company';
 const contactSeen = new Map();
 
@@ -517,24 +516,17 @@ app.post('/api/contact', async (req, res) => {
     };
 
     const rawBody = JSON.stringify(payload);
-    const headers = { 'X-Tenant': 'vattentrygg' };
-    const secret = process.env.SOURCE_WEBHOOK_SECRET;
-    if (secret) {
-      const signature = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
-      headers['X-Signature'] = `sha256=${signature}`;
-    }
-
-    const { ok, status, data } = await postRawWithTimeout(SOURCE_WEBHOOK_URL, {
+    const { status, data } = await postRawWithTimeout(SOURCE_MESSAGES_URL, {
       rawBody,
-      headers,
+      headers: { 'X-Tenant': 'vattentrygg' },
       timeoutMs: 8000,
     });
 
-    if (status === 201) {
+    if (status === 200 || status === 201) {
       return res.json({ success: true, message: CONTACT_SUCCESS_MESSAGE });
     }
 
-    console.error('Contact webhook error:', status, data);
+    console.error('Contact API error:', status, data);
     return res.status(502).json({ success: false, message: CONTACT_ERROR_MESSAGE });
   } catch (err) {
     console.error('contact error:', err);

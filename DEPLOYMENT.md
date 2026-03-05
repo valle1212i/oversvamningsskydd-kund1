@@ -22,11 +22,10 @@ VATTENTRYGG_OPEN_API_KEY=sk-...
 # Generate: openssl rand -hex 32
 IP_SALT=your-random-string-here
 
-# Source customer portal webhook (contact form → Kunder → Kundmeddelanden)
-# Required for contact form. Server signs payload with HMAC-SHA256.
-SOURCE_WEBHOOK_SECRET=your-webhook-secret-from-source-portal
-# Optional: override webhook URL (default: Cloud Run webhooks/messages)
-# SOURCE_WEBHOOK_URL=https://source-database-809785351172.europe-north1.run.app/webhooks/messages
+# Source public API (contact form → Kunder → Kundmeddelanden)
+# Contact form is forwarded to POST /api/messages with X-Tenant (no signature).
+# Optional: override URL (default: Cloud Run /api/messages)
+# SOURCE_MESSAGES_URL=https://source-database-809785351172.europe-north1.run.app/api/messages
 
 # Portal pageviews tracking (optional)
 PORTAL_PAGEVIEWS_URL=https://source-database.onrender.com/api/pageviews/track
