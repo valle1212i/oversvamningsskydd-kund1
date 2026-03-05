@@ -271,6 +271,29 @@ async function postJsonWithTimeout(url, { headers = {}, body = {}, timeoutMs = 8
 }
 
 // ----------------------------------------------------
+// Hjälpare: POST raw body med HMAC-signatur (Source webhook)
+// rawBody = exakt JSON-sträng som skickas (för signatur).
+// ----------------------------------------------------
+async function postRawWithTimeout(url, { rawBody, headers = {}, timeoutMs = 8000 } = {}) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...headers },
+      body: rawBody,
+      signal: ctrl.signal,
+    });
+    const text = await res.text();
+    let data;
+    try { data = text ? JSON.parse(text) : null; } catch { data = { raw: text }; }
+    return { ok: res.ok, status: res.status, data };
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+// ----------------------------------------------------
 // API: Aurora (chat)
 // ----------------------------------------------------
 app.post('/api/aurora/ask', async (req, res) => {
@@ -434,13 +457,13 @@ app.post('/api/visit', async (req, res) => {
 });
 
 // ----------------------------------------------------
-// API: Contact → vidarebefordra till kundportalen
-//  - Läser Webflow-fält (name-4, email-7, message-8)
-//  - Rate-limit via IP-hash (10s)
-//  - Skickar till PORTAL_WEBHOOK_URL med Bearer PORTAL_INBOUND_TOKEN
+// API: Contact → Source multi-tenant webhook (server-to-server)
+//  - Validerar fält, bygger payload, signerar med HMAC-SHA256
+//  - POST till SOURCE_WEBHOOK_URL med X-Tenant och X-Signature
 // ----------------------------------------------------
-const CONTACT_HONEYPOT_FIELD = 'company'; // lägg ett osynligt fält i formuläret
-const contactSeen = new Map(); // ipHash -> ts
+const SOURCE_WEBHOOK_URL = process.env.SOURCE_WEBHOOK_URL || 'https://source-database-809785351172.europe-north1.run.app/webhooks/messages';
+const CONTACT_HONEYPOT_FIELD = 'company';
+const contactSeen = new Map();
 
 function contactCooldown(ipHash, ms = 10_000) {
   const now = Date.now();
@@ -450,9 +473,11 @@ function contactCooldown(ipHash, ms = 10_000) {
   return false;
 }
 
+const CONTACT_SUCCESS_MESSAGE = 'Tack! Vi har mottagit ditt meddelande och återkommer så snart som möjligt.';
+const CONTACT_ERROR_MESSAGE = 'Tyvärr kunde meddelandet inte skickas just nu.';
+
 app.post('/api/contact', async (req, res) => {
   try {
-    // IP-hash för enkel rate limit + minimal spårning
     const rawIp =
       req.ip ||
       req.headers['x-forwarded-for'] ||
@@ -467,16 +492,14 @@ app.post('/api/contact', async (req, res) => {
 
     const b = Object(req.body || {});
     const name = (b.name || b['name-4'] || '').toString().trim().slice(0, 150);
-    const email = (b.email || b['email-7'] || '').toString().trim().slice(0, 200);
-    const message = (b.message || b['message-8'] || '').toString().trim().slice(0, 5000);
-    const phone = (b.phone || b['phone-number'] || '').toString().trim().slice(0, 50);
+    const email = (b.email || b['email-7'] || b['email-3'] || '').toString().trim().slice(0, 200);
+    const message = (b.message || b['message-8'] || b['message-4'] || '').toString().trim().slice(0, 5000);
+    const phone = (b.phone || b['phone-number'] || b['phone-number-2'] || '').toString().trim().slice(0, 50);
 
-    // Honeypot: om ifyllt -> behandla som OK men gör inget
     if ((b[CONTACT_HONEYPOT_FIELD] || '').toString().trim()) {
-      return res.status(202).json({ success: true, queued: true });
+      return res.status(202).json({ success: true, message: CONTACT_SUCCESS_MESSAGE });
     }
 
-    // Minimal validering
     if (!email || !/.+@.+\..+/.test(email)) {
       return res.status(400).json({ success: false, message: 'Ogiltig e-postadress' });
     }
@@ -484,38 +507,42 @@ app.post('/api/contact', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Meddelande krävs' });
     }
 
-    const url = process.env.PORTAL_WEBHOOK_URL;
-    const token = process.env.PORTAL_INBOUND_TOKEN;
-    if (!url || !token) {
-      return res.status(500).json({ success: false, message: 'Saknar portal-konfiguration' });
+    const secret = process.env.SOURCE_WEBHOOK_SECRET;
+    if (!secret) {
+      console.error('Contact webhook: SOURCE_WEBHOOK_SECRET not set');
+      return res.status(500).json({ success: false, message: CONTACT_ERROR_MESSAGE });
     }
 
     const payload = {
-      email,
+      tenant: 'vattentrygg',
       name,
+      email,
+      phone: phone || undefined,
+      subject: 'Kontakt från hemsidan',
       message,
-      phone,
-      source: 'vattentrygg.se',
-      page: req.get('referer') || null,
-      ip_hash: ipHash,
-      ua: req.get('user-agent') || null,
     };
 
-    const { ok, status, data } = await postJsonWithTimeout(url, {
-      headers: { Authorization: `Bearer ${token}` },
-      body: payload,
+    const rawBody = JSON.stringify(payload);
+    const signature = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+
+    const { ok, status, data } = await postRawWithTimeout(SOURCE_WEBHOOK_URL, {
+      rawBody,
+      headers: {
+        'X-Tenant': 'vattentrygg',
+        'X-Signature': `sha256=${signature}`,
+      },
       timeoutMs: 8000,
     });
 
-    if (!ok) {
-      console.error('Portal webhook fel:', status, data);
-      return res.status(502).json({ success: false, message: 'Kunde inte skicka till kundportalen' });
+    if (status === 201) {
+      return res.json({ success: true, message: CONTACT_SUCCESS_MESSAGE });
     }
 
-    return res.json({ success: true, ticket: data.ticket || null });
+    console.error('Contact webhook error:', status, data);
+    return res.status(502).json({ success: false, message: CONTACT_ERROR_MESSAGE });
   } catch (err) {
     console.error('contact error:', err);
-    return res.status(500).json({ success: false, message: 'Serverfel' });
+    return res.status(500).json({ success: false, message: CONTACT_ERROR_MESSAGE });
   }
 });
 

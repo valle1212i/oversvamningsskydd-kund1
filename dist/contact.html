@@ -467,24 +467,18 @@
   <script src="js/aurora.js"></script>
   <script>
     (function () {
-      // ✅ Bind bara EN gång även om skriptet råkar köras två gånger
       if (window.__vtgContactBound) return;
       window.__vtgContactBound = true;
-  
-      const API_BASE_PORTAL = 'https://source-database.onrender.com';
-      const API_BASE_AURORA = ''; // lämna tom för att hoppa över
-  
-      const hostname = location.hostname.toLowerCase();
-      const tenant = hostname.replace(/^www\./, '').split('.')[0] || 'vattentrygg';
   
       const form = document.getElementById('wf-form-contact-form');
       if (!form) return;
   
       const successEl = form.parentElement.querySelector('.w-form-done');
       const errorEl   = form.parentElement.querySelector('.w-form-fail');
+      const successText = successEl?.querySelector('div');
+      const errorText = errorEl?.querySelector('.form_error-message_content div:last-child');
       const submitBtn = form.querySelector('input[type="submit"]');
   
-      // säkerställ default dolda
       if (successEl) successEl.style.display = 'none';
       if (errorEl)   errorEl.style.display   = 'none';
   
@@ -508,48 +502,33 @@
           hide(successEl); show(errorEl); enable(submitBtn); return;
         }
   
-        const portalPayload = {
-          name, email, message,
-          subject: 'Kontaktformulär',
-          consent,
-          company: honeypot,
-          path: location.pathname,
-          ref: document.referrer || null,
-          ua: navigator.userAgent,
-          createdAt: new Date().toISOString()
-        };
-  
         try {
-          const portalRes = await fetch(`${API_BASE_PORTAL}/api/messages`, {
+          const res = await fetch('/api/contact', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'X-Tenant': tenant
-            },
-            body: JSON.stringify(portalPayload),
-            credentials: 'omit',
-            cache: 'no-store',
-            mode: 'cors'
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ name, email, message, phone: '', company: honeypot }),
+            credentials: 'same-origin',
+            cache: 'no-store'
           });
+          const data = await res.json().catch(() => ({}));
+          const msg = data.message || (res.ok ? 'Tack! Vi har mottagit ditt meddelande.' : 'Tyvärr kunde meddelandet inte skickas just nu.');
   
-          // (Aurora av – API_BASE_AURORA = '')
-  
-          if (portalRes.ok) {
+          if (res.ok && data.success) {
+            if (successText) successText.textContent = msg;
             hide(errorEl); show(successEl);
             form.reset();
-            enable(submitBtn);
-            return; // ✅ viktigt: avbryt här så inget annat hinner visa "error"
           } else {
+            if (errorText) errorText.textContent = msg;
             hide(successEl); show(errorEl);
           }
         } catch (err) {
           console.error('Contact error:', err);
+          if (errorText) errorText.textContent = 'Tyvärr kunde meddelandet inte skickas just nu.';
           hide(successEl); show(errorEl);
         } finally {
           enable(submitBtn);
         }
-      }, { passive:false });
+      }, { passive: false });
     })();
   </script>
      
