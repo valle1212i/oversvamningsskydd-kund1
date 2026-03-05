@@ -457,8 +457,8 @@ app.post('/api/visit', async (req, res) => {
 });
 
 // ----------------------------------------------------
-// API: Contact → send as form_submit to Source /api/ingest/analytics
-//  - Ingestion endpoint used by production tenants; routes into leads/messages
+// API: Contact → send as lead event to Source /api/ingest/analytics
+//  - Lead type routes into Kunder → Kundmeddelanden in the customer portal
 // ----------------------------------------------------
 const SOURCE_INGEST_ANALYTICS_URL = process.env.SOURCE_INGEST_ANALYTICS_URL || 'https://source-database-809785351172.europe-north1.run.app/api/ingest/analytics';
 const CONTACT_HONEYPOT_FIELD = 'company';
@@ -510,7 +510,7 @@ app.post('/api/contact', async (req, res) => {
       events: [
         {
           tenant: 'vattentrygg',
-          type: 'form_submit',
+          type: 'lead',
           url: 'https://vattentrygg.se/contact',
           page: '/contact',
           device: 'desktop',
