@@ -507,19 +507,23 @@ app.post('/api/contact', async (req, res) => {
     }
 
     const payload = {
-      tenant: 'vattentrygg',
-      type: 'form_submit',
-      url: 'https://vattentrygg.se/contact',
-      page: '/contact',
-      device: 'desktop',
-      timestamp: new Date().toISOString(),
-      event_props: {
-        name,
-        email,
-        phone: phone || '',
-        message,
-        form: 'contact',
-      },
+      events: [
+        {
+          tenant: 'vattentrygg',
+          type: 'form_submit',
+          url: 'https://vattentrygg.se/contact',
+          page: '/contact',
+          device: 'desktop',
+          timestamp: new Date().toISOString(),
+          event_props: {
+            name,
+            email,
+            phone: phone || '',
+            message,
+            form: 'contact',
+          },
+        },
+      ],
     };
 
     const rawBody = JSON.stringify(payload);
